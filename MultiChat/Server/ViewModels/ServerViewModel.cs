@@ -5,18 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.ComponentModel;
+using Server.Models;
+using System.Collections.ObjectModel;
+using Server.Commands;
 
 namespace Server.ViewModels
 {
     public class ServerViewModel : INotifyPropertyChanged
     {
-        #region Members
-        private string address;
+        #region View Members
+        private string serverAdress;
 
-		public string Address
+		public string ServerAddress
 		{
-			get { return address; }
-			set { address = value; }
+			get { return serverAdress; }
+			set { serverAdress = value; }
 		}
 		
 		private int serverPort;
@@ -35,12 +38,49 @@ namespace Server.ViewModels
 			set { bufferSize = value; }
 		}
 
-		private List<Message> messages;
+		private ObservableCollection<Message> messages;
 
-		public List<Message> Messages
+		public ObservableCollection<Message> Messages
 		{
 			get { return messages; }
 			set { messages = value; }
+		}
+
+		//TODO should be in the service
+		private bool isHosting;
+
+		public bool IsHosting
+		{
+			set { isHosting = value; OnPropertyChanged("HostingLabel"); }
+		}
+
+		private string hostingLabel;
+
+		public string HostingLabel
+		{
+			get { return !isHosting ? "Start connection" : "Stop connection"; }
+		}
+
+
+
+		#endregion
+
+		#region Connection Command
+		private ConnectionCommand connectionCommand;
+
+		public ConnectionCommand ConnectionCommand
+		{
+			get { return connectionCommand; }
+		}
+
+		public async void Connect()
+		{
+			Console.WriteLine("connecting...");
+			connectionCommand.Enable = false;
+			await Task.Delay(3 * 1000);
+			connectionCommand.Enable = true;
+			Console.WriteLine("connected!");
+			IsHosting = !isHosting;
 		}
 
 
@@ -60,7 +100,11 @@ namespace Server.ViewModels
 
 		public ServerViewModel()
 		{
-			
+			ServerAddress = "127.0.0.1";
+			ServerPort = 9000;
+			BufferSize = 1024;
+
+			connectionCommand = new ConnectionCommand(Connect);
 		}
 	}
 }

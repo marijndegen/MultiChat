@@ -3,9 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Server.Views"
              mc:Ignorable="d" 
+             xmlns:vm="clr-namespace:Server.ViewModels"
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.DataContext>
+        <vm:ServerViewModel/>
+    </UserControl.DataContext>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
@@ -34,15 +37,15 @@
                 <TextBox Grid.Row="1" x:Name="ClientName" Text="Client 1" Margin="5"/> -->
 
                 <Label Grid.Row="2">IP Address</Label>
-                <TextBox Grid.Row="3" x:Name="ServerIP" Text="127.0.0.1" Margin="5"/>
+                <TextBox Grid.Row="3" x:Name="ServerIP" Text="{Binding Path=ServerAddress, Mode=TwoWay}" Margin="5"/>
 
                 <Label Grid.Row="4">Port</Label>
-                <TextBox Grid.Row="5" x:Name="ServerPort" Text="9000" Margin="5"/>
+                <TextBox Grid.Row="5" x:Name="ServerPort" Text="{Binding Path=ServerPort, Mode=TwoWay}" Margin="5"/>
 
                 <Label Grid.Row="6">Buffer size</Label>
-                <TextBox Grid.Row="7" x:Name="BufferSize" Text="9000" Margin="5"/>
+                <TextBox Grid.Row="7" x:Name="BufferSize" Text="{Binding Path=BufferSize, Mode=TwoWay}" Margin="5"/>
 
-                <Button Grid.Row="8" x:Name="ServerConnect" Content="Start hosting" Padding="5" />
+                <Button Grid.Row="8" x:Name="ServerConnect" Content="{Binding Path=HostingLabel}" Command="{Binding Path=ConnectionCommand}" Padding="5" />
             </Grid>
         </GroupBox>
 
