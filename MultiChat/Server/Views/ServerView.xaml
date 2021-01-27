@@ -37,10 +37,10 @@
                 <TextBox Grid.Row="1" x:Name="ClientName" Text="Client 1" Margin="5"/> -->
 
                 <Label Grid.Row="2">IP Address</Label>
-                <TextBox Grid.Row="3" x:Name="ServerIP" Text="{Binding Path=ServerAddress, Mode=TwoWay}" Margin="5"/>
+                <TextBox Grid.Row="3" x:Name="ServerIP" Text="{Binding Path=ServerAddress, Mode=TwoWay}" IsEnabled="{Binding Path=IsIdle}" Margin="5"/>
 
                 <Label Grid.Row="4">Port</Label>
-                <TextBox Grid.Row="5" x:Name="ServerPort" Text="{Binding Path=ServerPort, Mode=TwoWay}" Margin="5"/>
+                <TextBox Grid.Row="5" x:Name="ServerPort" Text="{Binding Path=ServerPort, Mode=TwoWay}" IsEnabled="{Binding Path=IsIdle}" Margin="5"/>
 
                 <Label Grid.Row="6">Buffer size</Label>
                 <TextBox Grid.Row="7" x:Name="BufferSize" Text="{Binding Path=BufferSize, Mode=TwoWay}" Margin="5"/>

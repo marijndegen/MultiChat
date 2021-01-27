@@ -6,11 +6,7 @@
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
         xmlns:vw="clr-namespace:Server.Views"
-        
         Title="MainWindow" Height="350" Width="600">
-    <!--<Window.DataContext>
-        <vm:ServerViewModel/>
-    </Window.DataContext>-->
     <Grid>
 
         <vw:ServerView></vw:ServerView>

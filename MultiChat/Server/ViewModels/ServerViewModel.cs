@@ -13,7 +13,7 @@ namespace Server.ViewModels
 {
     public class ServerViewModel : INotifyPropertyChanged
     {
-        #region View Members
+        #region View values
         private string serverAdress;
 
 		public string ServerAddress
@@ -43,29 +43,31 @@ namespace Server.ViewModels
 		public ObservableCollection<Message> Messages
 		{
 			get { return messages; }
-			set { messages = value; }
+			set { messages = value; OnPropertyChanged("EmployeesList"); }
 		}
-
-		//TODO should be in the service
-		private bool isHosting;
-
-		public bool IsHosting
-		{
-			set { isHosting = value; OnPropertyChanged("HostingLabel"); }
-		}
-
-		private string hostingLabel;
-
-		public string HostingLabel
-		{
-			get { return !isHosting ? "Start connection" : "Stop connection"; }
-		}
-
-
 
 		#endregion
 
-		#region Connection Command
+		#region View Labels and state
+		private string hostingLabel = "Start hosting";
+
+		public string HostingLabel
+		{
+			get { return hostingLabel; }
+			set { hostingLabel = value; OnPropertyChanged("HostingLabel"); }
+		}
+
+		private bool isIdle = true;
+
+		public bool IsIdle
+		{
+			get { return isIdle; }
+			set { isIdle = value; OnPropertyChanged("IsIdle"); }
+		}
+
+		#endregion
+
+		#region Connection Operation
 		private ConnectionCommand connectionCommand;
 
 		public ConnectionCommand ConnectionCommand
@@ -75,14 +77,19 @@ namespace Server.ViewModels
 
 		public async void Connect()
 		{
-			Console.WriteLine("connecting...");
-			connectionCommand.Enable = false;
-			await Task.Delay(3 * 1000);
-			connectionCommand.Enable = true;
-			Console.WriteLine("connected!");
-			IsHosting = !isHosting;
-		}
+			try
+			{
+				if (!serverService.IsHosting)
+					await serverService.StartHosting(ServerAddress, ServerPort, BufferSize);
+				else
+					serverService.StopHosting();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
 
+		}
 
 		#endregion
 
@@ -96,7 +103,9 @@ namespace Server.ViewModels
 				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
-        #endregion
+		#endregion
+
+		private ServerService serverService;
 
 		public ServerViewModel()
 		{
@@ -105,6 +114,23 @@ namespace Server.ViewModels
 			BufferSize = 1024;
 
 			connectionCommand = new ConnectionCommand(Connect);
+			serverService = new ServerService(AddMessage, SetStatus);
+		}
+
+		public void AddMessage(string message)
+		{
+			messages.Add(new Message(message));
+			OnPropertyChanged("EmployeesList");
+		}
+
+		public void SetStatus(bool enable, bool hosting)
+		{
+			connectionCommand.Enable = enable;
+			if (!hosting)
+				HostingLabel = "Start Hosting";
+			else
+				HostingLabel = "Stop hosting";
+			IsIdle = !hosting;
 		}
 	}
 }
