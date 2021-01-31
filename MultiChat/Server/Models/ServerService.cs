@@ -91,15 +91,27 @@ namespace Server.Models
                     TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();
                     NetworkStream networkStream = tcpClient.GetStream();
 
-                    new Task(() => ClientService(networkStream));
+                    //new Task(() => MessageListener(networkStream));
 
-                    int readBytes = networkStream.Read(buffer, 0, bufferSize);
-                    message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+                    //int readBytes = networkStream.Read(buffer, 0, bufferSize);
+                    //message = Encoding.ASCII.GetString(buffer, 0, readBytes);
 
-                    Console.WriteLine(message);
+                    Task messageListener = Task.Run(() => MessageListener(networkStream));
+                    //messageListener.Start();
+                    
+                   
+
+                    //int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+                    //message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+
+                    //Console.WriteLine(message);
 
                     //Client client = new Client(networkStream);
                     //client.sendMessage("You are connected!", bufferSize);
+
+                    //byte[] buffer2 = Encoding.ASCII.GetBytes(message);
+                    //networkStream.Write(buffer, 0, buffer2.Length);
+
                     //networkStream.Close();
                     //tcpClient.Close();
                 }
@@ -109,22 +121,38 @@ namespace Server.Models
             catch (Exception ex)
             {
                 //IsHosting = false;
-                Console.WriteLine(ex.Message);
+                Console.WriteLine($"In hosting: {ex.Message}");
                 throw ex;
             }
         }
 
         //TODO MAYBE RENAME CLIENT TO MEMBER
-        public async Task ClientService(NetworkStream networkStream)
+        public async Task MessageListener(NetworkStream networkStream)
         {
+            Console.WriteLine("Message listner");
             int bufferSize = 1024;
             string message = "";
             byte[] buffer = new byte[bufferSize];
 
-            int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
-            message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+            try
+            {
+                while (isHosting)
+                {
+                    Console.WriteLine("in loop");
+                    int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+                    message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+                    Console.Write("Recieved: ");
+                    Console.WriteLine(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"In hosting: {ex.Message}");
+                throw;
+            }
 
-            Console.WriteLine(message);
+
+
         }
 
 
