@@ -73,26 +73,12 @@ namespace Client.Models
         {
             try
             {
-                //TODO EERSTE BERICHT VAN CLIENT NAAR SERVER STUREN WERKT, COMMITTEN EN DAARNA CLEANUP, VERVOLGENS PUSHEN
-
-                //int bufferSize = 1024;
-                //string message = "";
-                //byte[] buffer = new byte[bufferSize];
-
                 Console.WriteLine("connected");
                 networkStream = tcpClient.GetStream();
-
 
                 byte[] buffer = Encoding.ASCII.GetBytes("FIRST CLIENT MESSAGE");
                 await networkStream.WriteAsync(buffer, 0, buffer.Length);
                 Console.WriteLine("SENDED");
-
-                //while (clientActive)
-                //{
-                //    int readBytes = networkStream.Read(buffer, 0, bufferSize);
-                //    message = Encoding.ASCII.GetString(buffer, 0, readBytes);
-                //}
-                //Console.WriteLine(message);
             }
             catch (Exception ex)
             {
