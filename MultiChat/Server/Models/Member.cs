@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Server.Models
 {
-    public class Client
+    public class Member
     {
         private NetworkStream networkStream;
 
-        public Client(NetworkStream networkStream)
+        public Member(NetworkStream networkStream)
         {
             this.networkStream = networkStream;
         }

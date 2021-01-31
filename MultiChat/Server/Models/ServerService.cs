@@ -88,45 +88,25 @@ namespace Server.Models
             {
                 while (isHosting)
                 {
+
                     TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();
                     NetworkStream networkStream = tcpClient.GetStream();
 
-                    //new Task(() => MessageListener(networkStream));
-
-                    //int readBytes = networkStream.Read(buffer, 0, bufferSize);
-                    //message = Encoding.ASCII.GetString(buffer, 0, readBytes);
-
                     Task messageListener = Task.Run(() => MessageListener(networkStream));
-                    //messageListener.Start();
-                    
-                   
 
-                    //int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
-                    //message = Encoding.ASCII.GetString(buffer, 0, readBytes);
-
-                    //Console.WriteLine(message);
-
-                    //Client client = new Client(networkStream);
-                    //client.sendMessage("You are connected!", bufferSize);
-
-                    //byte[] buffer2 = Encoding.ASCII.GetBytes(message);
-                    //networkStream.Write(buffer, 0, buffer2.Length);
-
-                    //networkStream.Close();
-                    //tcpClient.Close();
                 }
 
 
             }
             catch (Exception ex)
             {
-                //IsHosting = false;
+                IsHosting = false;
                 Console.WriteLine($"In hosting: {ex.Message}");
                 throw ex;
             }
         }
 
-        //TODO MAYBE RENAME CLIENT TO MEMBER
+        //TODO place this method in member model class.
         public async Task MessageListener(NetworkStream networkStream)
         {
             Console.WriteLine("Message listner");
