@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-namespace Server.Commands
+
+namespace Shared.Commands
 {
     public class ConnectionCommand : ICommand
     {

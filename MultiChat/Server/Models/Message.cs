@@ -8,5 +8,16 @@ namespace Server.Models
 {
     public class Message
     {
-    }
+		private string text;
+
+		public string Text
+		{
+			get { return text; }
+			set { text = value; }
+		}
+		public Message(string text)
+		{
+			this.text = text;
+		}
+	}
 }
