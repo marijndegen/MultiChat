@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using Server.Models;
 using System.Collections.ObjectModel;
-using Server.Commands;
+using Shared.Commands;
 
 namespace Server.ViewModels
 {
@@ -49,12 +49,12 @@ namespace Server.ViewModels
 		#endregion
 
 		#region View Labels and state
-		private string hostingLabel = "Start hosting";
+		private string connectionLabel = "Start hosting";
 
-		public string HostingLabel
+		public string ConnectionLabel
 		{
-			get { return hostingLabel; }
-			set { hostingLabel = value; OnPropertyChanged("HostingLabel"); }
+			get { return connectionLabel; }
+			set { connectionLabel = value; OnPropertyChanged("ConnectionLabel"); }
 		}
 
 		private bool isIdle = true;
@@ -114,7 +114,7 @@ namespace Server.ViewModels
 			BufferSize = 1024;
 
 			connectionCommand = new ConnectionCommand(Connect);
-			serverService = new ServerService(AddMessage, SetStatus);
+			serverService = new ServerService(AddMessage, UpdateVMState);
 		}
 
 		public void AddMessage(string message)
@@ -123,14 +123,14 @@ namespace Server.ViewModels
 			OnPropertyChanged("EmployeesList");
 		}
 
-		public void SetStatus(bool enable, bool hosting)
+		public void UpdateVMState(bool enable, bool operating)
 		{
 			connectionCommand.Enable = enable;
-			if (!hosting)
-				HostingLabel = "Start Hosting";
+			if (!operating)
+				ConnectionLabel = "Start Hosting";
 			else
-				HostingLabel = "Stop hosting";
-			IsIdle = !hosting;
+				ConnectionLabel = "Stop hosting";
+			IsIdle = !operating;
 		}
 	}
 }

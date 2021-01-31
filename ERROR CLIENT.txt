@@ -1,0 +1,10 @@
+CLIENT ERROR
+connected
+Exception thrown: 'System.IO.IOException' in mscorlib.dll
+Exception thrown: 'System.IO.IOException' in Client.exe
+Exception thrown: 'System.IO.IOException' in mscorlib.dll
+Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host.
+Exception thrown: 'System.IO.IOException' in Client.exe
+Exception thrown: 'System.IO.IOException' in mscorlib.dll
+An exception of type 'System.IO.IOException' occurred in mscorlib.dll but was not handled in user code
+Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host.

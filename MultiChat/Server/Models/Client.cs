@@ -15,5 +15,12 @@ namespace Server.Models
         {
             this.networkStream = networkStream;
         }
+
+        public void sendMessage(string message, int bufferSize)
+        {
+            Console.WriteLine("writing message");
+            byte[] buffer = Encoding.ASCII.GetBytes(message);
+            networkStream.Write(buffer, 0, buffer.Length);
+        }
     }
 }

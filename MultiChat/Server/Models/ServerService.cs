@@ -10,6 +10,7 @@ namespace Server.Models
 {
     public class ServerService
     {
+        #region Hosting vars
         private bool isHosting = false;
 
         public bool IsHosting
@@ -18,21 +19,32 @@ namespace Server.Models
             set { isHosting = value; }
         }
 
-        //addMessage
-        private Action<string> AddMessage;
-        private Action<bool, bool> SetStatus;
+        private int bufferSize;
 
-        public ServerService(Action<string> addMessage, Action<bool, bool> setStatus)
+        public int BufferSize
         {
-            this.AddMessage = addMessage;
-            this.SetStatus = setStatus;
+            get { return bufferSize; }
+            set { bufferSize = value; }
         }
+
+        #endregion
+
+        #region Delegates
+        private Action<string> AddMessage;
+        private Action<bool, bool> UpdateVMState;
+        #endregion
 
         private TcpListener tcpListener;
 
+        public ServerService(Action<string> addMessage, Action<bool, bool> updateVMState)
+        {
+            this.AddMessage = addMessage;
+            this.UpdateVMState = updateVMState;
+        }
+
         public async Task StartHosting(string serverAddress, int port, int bufferSize)
         {
-            SetStatus(false, false);
+            UpdateVMState(false, false);
             try
             {
                 IPAddress address = IPAddress.Parse(serverAddress);
@@ -41,12 +53,12 @@ namespace Server.Models
                 if (bufferSize <= 0 || bufferSize >= 10000)
                     throw new Exception("Buffersize should be between 1 and 10.000");
 
-
+                this.bufferSize = bufferSize;
                 tcpListener = new TcpListener(address, port);
                 tcpListener.Start();
 
                 isHosting = true;
-                SetStatus(true, true);
+                UpdateVMState(true, true);
 
                 await Hosting();
             }
@@ -59,44 +71,60 @@ namespace Server.Models
 
         public void StopHosting()
         {
-            SetStatus(false, false);
+            UpdateVMState(false, false);
             tcpListener.Stop();
             tcpListener = null;
             isHosting = false;
-            SetStatus(true, false);
+            UpdateVMState(true, false);
         }
 
         public async Task Hosting()
         {
+            int bufferSize = 1024;
+            string message = "";
+            byte[] buffer = new byte[bufferSize];
+
             try
             {
-                TcpClient tcpClient;
-                NetworkStream networkStream;
-
                 while (isHosting)
                 {
-                    tcpClient = await tcpListener.AcceptTcpClientAsync();
-                    networkStream = tcpClient.GetStream();
+                    TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();
+                    NetworkStream networkStream = tcpClient.GetStream();
 
-                    byte[] buffer = Encoding.ASCII.GetBytes("you are connnected");
-                    networkStream.Write(buffer, 0, buffer.Length);
+                    new Task(() => ClientService(networkStream));
 
-                    networkStream.Close();
-                    tcpClient.Close();
+                    int readBytes = networkStream.Read(buffer, 0, bufferSize);
+                    message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+
+                    Console.WriteLine(message);
+
+                    //Client client = new Client(networkStream);
+                    //client.sendMessage("You are connected!", bufferSize);
+                    //networkStream.Close();
+                    //tcpClient.Close();
                 }
 
-                
+
             }
             catch (Exception ex)
             {
-                IsHosting = false; 
+                //IsHosting = false;
+                Console.WriteLine(ex.Message);
                 throw ex;
             }
         }
 
-        public Task ClientService()
+        //TODO MAYBE RENAME CLIENT TO MEMBER
+        public async Task ClientService(NetworkStream networkStream)
         {
-            return null;
+            int bufferSize = 1024;
+            string message = "";
+            byte[] buffer = new byte[bufferSize];
+
+            int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+            message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+
+            Console.WriteLine(message);
         }
 
 
