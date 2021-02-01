@@ -104,12 +104,11 @@ namespace Client.ViewModels
 		{
 			if (isIdle)
 			{
-				//TODO pass clientname
 				await clientService.StartConnectionToHost(ServerAddress, ServerPort, BufferSize);
 			}
 			else
 			{
-
+				await clientService.StopConnectionToHost();
 			}
 		}
 

@@ -36,18 +36,18 @@
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0">Name</Label>
-                <TextBox Grid.Row="1" x:Name="ClientName" Text="{Binding Path=ClientName}"  Margin="5"/>
+                <TextBox Grid.Row="1" x:Name="ClientName" Text="{Binding Path=ClientName}" IsEnabled="{Binding Path=IsIdle}"  Margin="5"/>
 
                 <Label Grid.Row="2">IP Address</Label>
-                <TextBox Grid.Row="3" x:Name="ServerIP" Text="{Binding Path=ServerAddress}" Margin="5"/>
+                <TextBox Grid.Row="3" x:Name="ServerIP" Text="{Binding Path=ServerAddress}" IsEnabled="{Binding Path=IsIdle}" Margin="5"/>
 
                 <Label Grid.Row="4">Port</Label>
-                <TextBox Grid.Row="5" x:Name="ServerPort" Text="{Binding Path=ServerPort}" Margin="5"/>
+                <TextBox Grid.Row="5" x:Name="ServerPort" Text="{Binding Path=ServerPort}" IsEnabled="{Binding Path=IsIdle}" Margin="5"/>
 
                 <Label Grid.Row="6">Buffer size</Label>
                 <TextBox Grid.Row="7" x:Name="BufferSize" Text="{Binding Path=BufferSize}" Margin="5"/>
 
-                <Button Grid.Row="8" x:Name="ServerConnect" Content="Connect" Command="{Binding Path=ConnectionCommand}" Padding="5" />
+                <Button Grid.Row="8" x:Name="ServerConnect" Content="{Binding Path=ConnectionLabel}" Command="{Binding Path=ConnectionCommand}" Padding="5" />
             </Grid>
         </GroupBox>
 

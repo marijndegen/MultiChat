@@ -61,12 +61,8 @@ namespace Client.Models
                 clientActive = true;
                 UpdateVMState(true, true);
 
-
-
                 networkStream = tcpClient.GetStream();
 
-
-                //TODO make listner new treadstart
                 await Task.Run(() => this.ConnectionToHost());
             }
             catch (Exception ex)
@@ -75,8 +71,16 @@ namespace Client.Models
                 Console.WriteLine(ex.Message);
                 throw ex;
             }
+        }
 
-
+        public async Task StopConnectionToHost()
+        {
+            UpdateVMState(false, false);
+            clientActive = false;
+            tcpClient.GetStream().Close();
+            tcpClient.Close();
+            tcpClient = null;
+            UpdateVMState(true, false);
         }
 
         public async Task ConnectionToHost()
@@ -97,10 +101,7 @@ namespace Client.Models
 
         }
 
-        public void StopConnectionToHost()
-        {
 
-        }
 
         public async Task SendCom(string message)
         {

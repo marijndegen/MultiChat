@@ -84,9 +84,9 @@ namespace Server.Models
         public void StopHosting()
         {
             UpdateVMState(false, false);
+            isHosting = false;
             tcpListener.Stop();
             tcpListener = null;
-            isHosting = false;
             UpdateVMState(true, false);
         }
         #endregion
@@ -139,6 +139,7 @@ namespace Server.Models
 
             try
             {
+                //TODO while isHosting should be replaced by a pulse message that checks wether the networkStream is still available.
                 while (isHosting)
                 {
                     int readBytes = await memberModel.NetworkStream.ReadAsync(buffer, 0, bufferSize);
