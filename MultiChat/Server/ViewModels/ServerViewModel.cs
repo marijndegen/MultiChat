@@ -8,6 +8,8 @@ using System.ComponentModel;
 using Server.Models;
 using System.Collections.ObjectModel;
 using Shared.Commands;
+using Server.Models.ServerCom;
+using Shared.Models;
 
 namespace Server.ViewModels
 {
@@ -38,17 +40,17 @@ namespace Server.ViewModels
 			set { bufferSize = value; }
 		}
 
-		private ObservableCollection<Message> messages;
+		private ObservableCollection<IChatMessage> messages;
 
-		public ObservableCollection<Message> Messages
+		public ObservableCollection<IChatMessage> Messages
 		{
 			get { return messages; }
-			set { messages = value; OnPropertyChanged("EmployeesList"); }
+			set { messages = value; OnPropertyChanged("Messages"); }
 		}
 
 		#endregion
 
-		#region View Labels and state
+		#region View labels and state
 		private string connectionLabel = "Start hosting";
 
 		public string ConnectionLabel
@@ -67,7 +69,7 @@ namespace Server.ViewModels
 
 		#endregion
 
-		#region Connection Operation
+		#region View operations
 		private ConnectionCommand connectionCommand;
 
 		public ConnectionCommand ConnectionCommand
@@ -75,7 +77,7 @@ namespace Server.ViewModels
 			get { return connectionCommand; }
 		}
 
-		public async void Connect()
+		public async void ConnectOrDisconnect()
 		{
 			try
 			{
@@ -90,11 +92,10 @@ namespace Server.ViewModels
 			}
 
 		}
+        #endregion
 
-		#endregion
-
-		#region INotifyPropertyChanged
-		public event PropertyChangedEventHandler PropertyChanged;
+        #region INotifyPropertyChanged
+        public event PropertyChangedEventHandler PropertyChanged;
 
 		private void OnPropertyChanged(string propertyName)
 		{
@@ -103,9 +104,11 @@ namespace Server.ViewModels
 				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
-		#endregion
+        #endregion
 
-		private ServerService serverService;
+        #region Service and constructor
+
+        private ServerService serverService;
 
 		public ServerViewModel()
 		{
@@ -113,14 +116,15 @@ namespace Server.ViewModels
 			ServerPort = 9000;
 			BufferSize = 1024;
 
-			connectionCommand = new ConnectionCommand(Connect);
+			connectionCommand = new ConnectionCommand(ConnectOrDisconnect);
 			serverService = new ServerService(AddMessage, UpdateVMState);
 		}
+        #endregion
 
-		public void AddMessage(string message)
+        #region Service operations
+        public void AddMessage(IChatMessage message)
 		{
-			messages.Add(new Message(message));
-			OnPropertyChanged("EmployeesList");
+			messages.Add(message); OnPropertyChanged("Messages");
 		}
 
 		public void UpdateVMState(bool enable, bool operating)
@@ -132,5 +136,6 @@ namespace Server.ViewModels
 				ConnectionLabel = "Stop hosting";
 			IsIdle = !operating;
 		}
-	}
+        #endregion
+    }
 }

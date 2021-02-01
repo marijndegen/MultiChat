@@ -1,8 +1,10 @@
 ﻿using Client.Commands;
 using Client.Models;
+using Client.Models.ClientCom;
 using Shared.Commands;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -11,7 +13,7 @@ using System.Threading.Tasks;
 namespace Client.ViewModels
 {
     public class ClientViewModel : INotifyPropertyChanged
-    {
+	{
         #region View values
         private string clientName;
 
@@ -42,7 +44,7 @@ namespace Client.ViewModels
 		public int BufferSize
 		{
 			get { return bufferSize; }
-			set { bufferSize = value; OnPropertyChanged("BufferSize"); }
+			set { bufferSize = value; }
 		}
 
 		private string message;
@@ -53,10 +55,18 @@ namespace Client.ViewModels
 			set { message = value; }
 		}
 
+		private ObservableCollection<ClientChatMessage> messages;
+
+		public ObservableCollection<ClientChatMessage> Messages
+		{
+			get { return messages; }
+			set { messages = value; OnPropertyChanged("Messages"); }
+		}
+
 
 		#endregion
 
-		#region Viewlabels and State
+		#region View labels and State
 		private string connectionLabel = "Start connection with host";
 
 		public string ConnectionLabel
@@ -73,9 +83,10 @@ namespace Client.ViewModels
 			set { isIdle = value; }
 		}
 
-		#endregion
+        #endregion
 
-		private ConnectionCommand connectionCommand;
+        #region View operations
+        private ConnectionCommand connectionCommand;
 
 		public ConnectionCommand ConnectionCommand
 		{
@@ -89,37 +100,7 @@ namespace Client.ViewModels
 			get { return messageCommand; }
 		}
 
-
-		#region INotifyPropertyChanged
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		private void OnPropertyChanged(string propertyName)
-		{
-			if (PropertyChanged != null)
-			{
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-		#endregion
-
-		private ClientService clientService;
-
-		public ClientViewModel()
-		{
-			ClientName = "Client 1";
-			ServerAddress = "127.0.0.1";
-			ServerPort = 9000;
-			BufferSize = 1024;
-			Message = "Hello World!";
-
-			connectionCommand = new ConnectionCommand(StartConnection);
-			messageCommand = new MessageCommand(SendMessage);	
-			clientService = new ClientService(AddMessage, UpdateVMState);
-
-		}
-
-
-		public async void StartConnection()
+		public async void ConnectOrDisconnect()
 		{
 			if (isIdle)
 			{
@@ -132,12 +113,44 @@ namespace Client.ViewModels
 			}
 		}
 
-		public async void SendMessage() 
+		public async void SendMessage()
 		{
 			await clientService.SendCom(message);
 		}
 
-        #region Service functions
+		#endregion
+
+		#region INotifyPropertyChanged
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		private void OnPropertyChanged(string propertyName)
+		{
+			if (PropertyChanged != null)
+			{
+				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+        #endregion
+
+        #region Service and constructor
+        private ClientService clientService;
+
+		public ClientViewModel()
+		{
+			ClientName = "Client 1";
+			ServerAddress = "127.0.0.1";
+			ServerPort = 9000;
+			BufferSize = 1024;
+			Message = "Hello World!";
+
+			connectionCommand = new ConnectionCommand(ConnectOrDisconnect);
+			messageCommand = new MessageCommand(SendMessage);	
+			clientService = new ClientService(AddMessage, UpdateVMState);
+
+		}
+        #endregion
+
+        #region Service operations
         public void AddMessage(string text)
 		{
 			
@@ -153,9 +166,5 @@ namespace Client.ViewModels
 			IsIdle = !operating;
 		}
         #endregion
-
-
-
-
     }
 }

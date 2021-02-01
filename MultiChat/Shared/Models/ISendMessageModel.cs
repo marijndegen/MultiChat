@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Shared.Models
 {
-    public interface MessageModel : ComModel
+    public interface ISendMessageModel : IMessageModel, ISendComModel
     {
-        
+
     }
 }

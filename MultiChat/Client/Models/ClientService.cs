@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Shared.HelperFunctions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using static Shared.HelperFunctions.Validation;
 
 namespace Client.Models
 {
@@ -47,18 +49,20 @@ namespace Client.Models
 
         public async Task StartConnectionToHost(string serverAddress, int port, int bufferSize)
         {
+            UpdateVMState(false, false);
             try
             {
-                IPAddress address = IPAddress.Parse(serverAddress);
-                if (port <= 0 || port >= 65535)
-                    throw new Exception($"Port: {port} not valid");
-                if (bufferSize <= 0 || bufferSize >= 10000)
-                    throw new Exception("Buffersize should be between 1 and 10.000");
-
-                this.bufferSize = bufferSize;
+                UserInput userInput = Validation.ValidateUserInput(serverAddress, port, bufferSize);
+                this.bufferSize = userInput.BufferSize;
+                
                 tcpClient = new TcpClient();
-                tcpClient.Connect(address, port);
+                tcpClient.Connect(userInput.Address, userInput.Port);
+                
                 clientActive = true;
+                UpdateVMState(true, true);
+
+
+
                 networkStream = tcpClient.GetStream();
 
 

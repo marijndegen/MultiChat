@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Shared.Models
 {
-    public class MemberModel
+    public class IMemberModel
     {
 		private Guid guid;
 
@@ -33,14 +33,14 @@ namespace Shared.Models
 
 
 
-		public MemberModel(string name, NetworkStream networkStream)
+		public IMemberModel(string name, NetworkStream networkStream)
 		{
 			guid = Guid.NewGuid();
 			this.name = name.ToCharArray();
 			this.networkStream = networkStream;
 		}
 
-		public void Send(SendComModel message, int bufferSize)
+		public void Send(ISendComModel message, int bufferSize)
 		{
 			throw new NotImplementedException();
 		}

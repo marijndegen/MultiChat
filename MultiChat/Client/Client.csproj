@@ -64,6 +64,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Commands\MessageCommand.cs" />
+    <Compile Include="Models\ClientCom\ClientChatMessage.cs" />
     <Compile Include="Models\ClientService.cs" />
     <Compile Include="ViewModels\ClientViewModel.cs" />
     <Compile Include="Views\ClientView.xaml.cs">
@@ -113,9 +114,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\ClientCom\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Server\Server.csproj">
       <Project>{FFCEFAE2-0080-4A03-8306-0BD247D394C4}</Project>

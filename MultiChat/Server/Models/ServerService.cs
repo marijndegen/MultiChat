@@ -1,4 +1,5 @@
-﻿using Shared.Models;
+﻿using Shared.HelperFunctions;
+using Shared.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using static Shared.HelperFunctions.Validation;
 
 namespace Server.Models
 {
@@ -32,9 +34,9 @@ namespace Server.Models
         #endregion
 
         #region Service vars
-        private ConcurrentDictionary<Guid, MemberModel> memberModels;
+        private ConcurrentDictionary<Guid, IMemberModel> memberModels;
 
-        public ConcurrentDictionary<Guid, MemberModel> MemberModels
+        public ConcurrentDictionary<Guid, IMemberModel> MemberModels
         {
             get { return memberModels; }
             set { memberModels = value; }
@@ -42,17 +44,17 @@ namespace Server.Models
         #endregion
 
         #region Delegates
-        private Action<string> AddMessage;
+        private Action<IChatMessage> AddMessage;
         private Action<bool, bool> UpdateVMState;
         #endregion
 
         private TcpListener tcpListener;
 
-        public ServerService(Action<string> addMessage, Action<bool, bool> updateVMState)
+        public ServerService(Action<IChatMessage> addMessage, Action<bool, bool> updateVMState)
         {
             this.AddMessage = addMessage;
             this.UpdateVMState = updateVMState;
-            memberModels = new ConcurrentDictionary<Guid, MemberModel>();
+            memberModels = new ConcurrentDictionary<Guid, IMemberModel>();
         }
 
         #region Starthosting and Stophosting controls
@@ -61,14 +63,10 @@ namespace Server.Models
             UpdateVMState(false, false);
             try
             {
-                IPAddress address = IPAddress.Parse(serverAddress);
-                if (port <= 0 || port >= 65535)
-                    throw new Exception($"Port: {port} not valid");
-                if (bufferSize <= 0 || bufferSize >= 10000)
-                    throw new Exception("Buffersize should be between 1 and 10.000");
+                UserInput userInput = Validation.ValidateUserInput(serverAddress, port, bufferSize);
+                this.bufferSize = userInput.BufferSize;
 
-                this.bufferSize = bufferSize;
-                tcpListener = new TcpListener(address, port);
+                tcpListener = new TcpListener(userInput.Address, userInput.Port);
                 tcpListener.Start();
 
                 isHosting = true;
@@ -110,7 +108,7 @@ namespace Server.Models
 
                     newUserCount++;
 
-                    MemberModel memberModel = new MemberModel($"New user: {newUserCount}", networkStream);
+                    IMemberModel memberModel = new IMemberModel($"New user: {newUserCount}", networkStream);
                     memberModels.TryAdd(memberModel.Guid, memberModel);
 
                     //MemberModel inDir = memberModels[memberModel.Guid];
@@ -130,7 +128,7 @@ namespace Server.Models
         }
 
         //TODO place this method in member model class.
-        public async Task ComListener(MemberModel memberModel)
+        public async Task ComListener(IMemberModel memberModel)
         {
             bool longtime = true;
 
@@ -146,9 +144,9 @@ namespace Server.Models
                     int readBytes = await memberModel.NetworkStream.ReadAsync(buffer, 0, bufferSize);
                     message = Encoding.ASCII.GetString(buffer, 0, readBytes);
 
-                    foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
+                    foreach (KeyValuePair<Guid, IMemberModel> entry in memberModels)
                     {
-                        MemberModel broadCastMember = entry.Value;
+                        IMemberModel broadCastMember = entry.Value;
                         //if (entry.Value.Guid != memberModel.Guid && longtime)
                         if(longtime)
                         {

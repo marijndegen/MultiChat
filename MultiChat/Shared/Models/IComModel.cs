@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Shared.Models
 {
-    public interface ComModel
+    public interface IComModel
     {
         byte GetType();
 
