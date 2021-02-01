@@ -63,8 +63,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Commands\ConnectionCommand.cs" />
-    <Compile Include="Models\Client.cs" />
+    <Compile Include="Models\Member.cs" />
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\ServerService.cs" />
     <Compile Include="ViewModels\ServerViewModel.cs" />
