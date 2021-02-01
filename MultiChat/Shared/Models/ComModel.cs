@@ -4,7 +4,10 @@ using System.Text;
 
 namespace Shared.Models
 {
-    interface ComModel
+    public interface ComModel
     {
+        byte GetType();
+
+        char[] toCharArray();
     }
 }

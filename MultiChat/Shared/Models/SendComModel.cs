@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Shared.Models
 {
-    interface SendComModel : ComModel
+    public interface SendComModel : ComModel
     {
     }
 }
