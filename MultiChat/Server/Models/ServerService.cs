@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Shared.Models;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -29,6 +31,16 @@ namespace Server.Models
 
         #endregion
 
+        #region Service vars
+        private ConcurrentDictionary<Guid, MemberModel> memberModels;
+
+        public ConcurrentDictionary<Guid, MemberModel> MemberModels
+        {
+            get { return memberModels; }
+            set { memberModels = value; }
+        }
+        #endregion
+
         #region Delegates
         private Action<string> AddMessage;
         private Action<bool, bool> UpdateVMState;
@@ -40,8 +52,10 @@ namespace Server.Models
         {
             this.AddMessage = addMessage;
             this.UpdateVMState = updateVMState;
+            memberModels = new ConcurrentDictionary<Guid, MemberModel>();
         }
 
+        #region Starthosting and Stophosting controls
         public async Task StartHosting(string serverAddress, int port, int bufferSize)
         {
             UpdateVMState(false, false);
@@ -77,22 +91,31 @@ namespace Server.Models
             isHosting = false;
             UpdateVMState(true, false);
         }
+        #endregion
 
         public async Task Hosting()
         {
-            int bufferSize = 1024;
-            string message = "";
-            byte[] buffer = new byte[bufferSize];
+            //int bufferSize = 1024;
+            //string message = "";
+            //byte[] buffer = new byte[bufferSize];
 
+            byte newUserCount = 0;
             try
             {
                 while (isHosting)
                 {
-
+                    
                     TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();
                     NetworkStream networkStream = tcpClient.GetStream();
 
-                    Task messageListener = Task.Run(() => MessageListener(networkStream));
+                    newUserCount++;
+
+                    MemberModel memberModel = new MemberModel($"New user: {newUserCount}", networkStream);
+                    memberModels.TryAdd(memberModel.Guid, memberModel);
+
+                    //MemberModel inDir = memberModels[memberModel.Guid];
+
+                    Task messageListener = Task.Run(() => ComListener(memberModel));
 
                 }
 
@@ -107,9 +130,11 @@ namespace Server.Models
         }
 
         //TODO place this method in member model class.
-        public async Task MessageListener(NetworkStream networkStream)
+        public async Task ComListener(MemberModel memberModel)
         {
-            Console.WriteLine("Message listner");
+            bool longtime = true;
+
+            Console.WriteLine("Com listener");
             int bufferSize = 1024;
             string message = "";
             byte[] buffer = new byte[bufferSize];
@@ -118,9 +143,22 @@ namespace Server.Models
             {
                 while (isHosting)
                 {
-                    Console.WriteLine("in loop");
-                    int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+                    int readBytes = await memberModel.NetworkStream.ReadAsync(buffer, 0, bufferSize);
                     message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+
+                    foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
+                    {
+                        MemberModel broadCastMember = entry.Value;
+                        //if (entry.Value.Guid != memberModel.Guid && longtime)
+                        if(longtime)
+                        {
+                            //longtime = false;
+                            byte[] bufferToSend = Encoding.ASCII.GetBytes(message);
+                            broadCastMember.NetworkStream.Write(bufferToSend, 0, bufferToSend.Length);
+                        }
+
+                    }
+
                     Console.Write("Recieved: ");
                     Console.WriteLine(message);
                 }
@@ -130,13 +168,6 @@ namespace Server.Models
                 Console.WriteLine($"In hosting: {ex.Message}");
                 throw;
             }
-
-
-
         }
-
-
-
-
     }
 }

@@ -41,6 +41,8 @@ namespace Client.Models
         {
             this.AddMessage = addMessage;
             this.UpdateVMState = updateVMState;
+            Console.WriteLine(DateTime.Now.ToString());
+            Console.WriteLine(DateTime.Parse(DateTime.Now.ToString()));
         }
 
         public async Task StartConnectionToHost(string serverAddress, int port, int bufferSize)
@@ -57,11 +59,15 @@ namespace Client.Models
                 tcpClient = new TcpClient();
                 tcpClient.Connect(address, port);
                 clientActive = true;
+                networkStream = tcpClient.GetStream();
 
-                await ConnectionToHost();
+
+                //TODO make listner new treadstart
+                await Task.Run(() => this.ConnectionToHost());
             }
             catch (Exception ex)
             {
+                Console.WriteLine("ERROR");
                 Console.WriteLine(ex.Message);
                 throw ex;
             }
@@ -71,12 +77,33 @@ namespace Client.Models
 
         public async Task ConnectionToHost()
         {
+
+            int bufferSize = 1024;
+            string message = "";
+            byte[] buffer = new byte[bufferSize];
+
+            while (clientActive)
+            {
+                int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+                message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+                Console.WriteLine(message);
+
+            }
+
+
+        }
+
+        public void StopConnectionToHost()
+        {
+
+        }
+
+        public async Task SendCom(string message)
+        {
             try
             {
-                Console.WriteLine("connected");
-                networkStream = tcpClient.GetStream();
-
-                byte[] buffer = Encoding.ASCII.GetBytes("FIRST CLIENT MESSAGE");
+                //Console.WriteLine("connected");
+                byte[] buffer = Encoding.ASCII.GetBytes(message);
                 await networkStream.WriteAsync(buffer, 0, buffer.Length);
                 Console.WriteLine("SENDED");
             }
@@ -84,12 +111,6 @@ namespace Client.Models
             {
                 throw ex;
             }
-
-        }
-
-        public void StopConnectionToHost()
-        {
-
         }
 
         

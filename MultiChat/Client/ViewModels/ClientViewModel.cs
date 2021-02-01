@@ -1,4 +1,5 @@
-﻿using Client.Models;
+﻿using Client.Commands;
+using Client.Models;
 using Shared.Commands;
 using System;
 using System.Collections.Generic;
@@ -43,6 +44,16 @@ namespace Client.ViewModels
 			get { return bufferSize; }
 			set { bufferSize = value; OnPropertyChanged("BufferSize"); }
 		}
+
+		private string message;
+
+		public string Message
+		{
+			get { return message; }
+			set { message = value; }
+		}
+
+
 		#endregion
 
 		#region Viewlabels and State
@@ -62,8 +73,6 @@ namespace Client.ViewModels
 			set { isIdle = value; }
 		}
 
-
-
 		#endregion
 
 		private ConnectionCommand connectionCommand;
@@ -71,6 +80,13 @@ namespace Client.ViewModels
 		public ConnectionCommand ConnectionCommand
 		{
 			get { return connectionCommand; }
+		}
+
+		private MessageCommand messageCommand;
+
+		public MessageCommand MessageCommand
+		{
+			get { return messageCommand; }
 		}
 
 
@@ -94,10 +110,12 @@ namespace Client.ViewModels
 			ServerAddress = "127.0.0.1";
 			ServerPort = 9000;
 			BufferSize = 1024;
+			Message = "Hello World!";
 
 			connectionCommand = new ConnectionCommand(StartConnection);
+			messageCommand = new MessageCommand(SendMessage);	
 			clientService = new ClientService(AddMessage, UpdateVMState);
-			//TODO BIND THE STARTCONNECTION COMMAND 
+
 		}
 
 
@@ -114,9 +132,15 @@ namespace Client.ViewModels
 			}
 		}
 
-		public void AddMessage(string text)
+		public async void SendMessage() 
 		{
+			await clientService.SendCom(message);
+		}
 
+        #region Service functions
+        public void AddMessage(string text)
+		{
+			
 		}
 
 		public void UpdateVMState(bool enable, bool operating)
@@ -128,9 +152,10 @@ namespace Client.ViewModels
 				ConnectionLabel = "Stop connection with host";
 			IsIdle = !operating;
 		}
+        #endregion
 
 
 
 
-	}
+    }
 }
