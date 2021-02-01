@@ -33,10 +33,6 @@ interface MessageModel implements ComModel
 
 interface SendMessageModel implements MessageModel, SendComModel 
 
-- +timestamp: Timestamp
-
-- +text : char[]
-
 
 
 #### CLIENT
