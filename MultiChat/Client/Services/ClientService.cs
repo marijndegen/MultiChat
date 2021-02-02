@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using static Shared.HelperFunctions.Validation;
 
-namespace Client.Models
+namespace Client.Services
 {
     class ClientService
     {
-        #region Client vars
+        #region Service vars
         private bool clientActive = false;
 
         public bool ClientActive
@@ -36,6 +36,7 @@ namespace Client.Models
         private Action<bool, bool> UpdateVMState;
         #endregion
 
+        #region TCP vars and constructor 
         private TcpClient tcpClient;
         private NetworkStream networkStream;
 
@@ -46,6 +47,8 @@ namespace Client.Models
             Console.WriteLine(DateTime.Now.ToString());
             Console.WriteLine(DateTime.Parse(DateTime.Now.ToString()));
         }
+
+        #endregion
 
         public async Task StartConnectionToHost(string serverAddress, int port, int bufferSize)
         {
@@ -63,7 +66,7 @@ namespace Client.Models
 
                 networkStream = tcpClient.GetStream();
 
-                await Task.Run(() => this.ConnectionToHost());
+                Task messageListner = Task.Run(() => this.ConnectionToHost());
             }
             catch (Exception ex)
             {

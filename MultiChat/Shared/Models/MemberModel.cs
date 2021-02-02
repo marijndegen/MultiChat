@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Shared.Models
 {
-    public class IMemberModel
+    public class MemberModel
     {
 		private Guid guid;
 
@@ -23,21 +23,21 @@ namespace Shared.Models
 			set { name = value; }
 		}
 
-		private NetworkStream networkStream;
+		private TcpClient tcpClient;
 
-		public NetworkStream NetworkStream
+		public TcpClient TcpClient
 		{
-			get { return networkStream; }
-			set { networkStream = value; }
+			get { return tcpClient; }
+			set { tcpClient = value; }
 		}
 
 
 
-		public IMemberModel(string name, NetworkStream networkStream)
+		public MemberModel(string name, TcpClient tcpClient)
 		{
 			guid = Guid.NewGuid();
 			this.name = name.ToCharArray();
-			this.networkStream = networkStream;
+			this.tcpClient = tcpClient;
 		}
 
 		public void Send(ISendComModel message, int bufferSize)

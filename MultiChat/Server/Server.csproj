@@ -66,7 +66,7 @@
     <Compile Include="Models\Member.cs" />
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\ServerCom\ServerChatMessage.cs" />
-    <Compile Include="Models\ServerService.cs" />
+    <Compile Include="Services\ServerService.cs" />
     <Compile Include="ViewModels\ServerViewModel.cs" />
     <Compile Include="Views\ServerView.xaml.cs">
       <DependentUpon>ServerView.xaml</DependentUpon>

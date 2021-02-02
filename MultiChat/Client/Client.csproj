@@ -65,7 +65,7 @@
     </ApplicationDefinition>
     <Compile Include="Commands\MessageCommand.cs" />
     <Compile Include="Models\ClientCom\ClientChatMessage.cs" />
-    <Compile Include="Models\ClientService.cs" />
+    <Compile Include="Services\ClientService.cs" />
     <Compile Include="ViewModels\ClientViewModel.cs" />
     <Compile Include="Views\ClientView.xaml.cs">
       <DependentUpon>ClientView.xaml</DependentUpon>

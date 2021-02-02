@@ -10,18 +10,21 @@ using System.Collections.ObjectModel;
 using Shared.Commands;
 using Server.Models.ServerCom;
 using Shared.Models;
+using Server.Services;
+using Shared.HelperFunctions;
+using static Shared.HelperFunctions.Validation;
 
 namespace Server.ViewModels
 {
     public class ServerViewModel : INotifyPropertyChanged
     {
         #region View values
-        private string serverAdress;
+        private string serverAddress;
 
 		public string ServerAddress
 		{
-			get { return serverAdress; }
-			set { serverAdress = value; }
+			get { return serverAddress; }
+			set { serverAddress = value; }
 		}
 		
 		private int serverPort;
@@ -77,14 +80,19 @@ namespace Server.ViewModels
 			get { return connectionCommand; }
 		}
 
-		public async void ConnectOrDisconnect()
+		public void ConnectOrDisconnect()
 		{
 			try
 			{
-				if (!serverService.IsHosting)
-					await serverService.StartHosting(ServerAddress, ServerPort, BufferSize);
+				if (isIdle)
+				{
+					UserInput input = Validation.ValidateUserInput(serverAddress, serverPort, bufferSize);
+					serverService.StartHosting(input);
+				}
 				else
+				{
 					serverService.StopHosting();
+				}
 			}
 			catch (Exception ex)
 			{

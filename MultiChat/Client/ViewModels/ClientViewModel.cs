@@ -1,6 +1,7 @@
 ﻿using Client.Commands;
 using Client.Models;
 using Client.Models.ClientCom;
+using Client.Services;
 using Shared.Commands;
 using System;
 using System.Collections.Generic;
@@ -102,14 +103,22 @@ namespace Client.ViewModels
 
 		public async void ConnectOrDisconnect()
 		{
-			if (isIdle)
+			try
 			{
-				await clientService.StartConnectionToHost(ServerAddress, ServerPort, BufferSize);
+				if (isIdle)
+				{
+					await clientService.StartConnectionToHost(ServerAddress, ServerPort, BufferSize);
+				}
+				else
+				{
+					await clientService.StopConnectionToHost();
+				}
 			}
-			else
+			catch (Exception ex)
 			{
-				await clientService.StopConnectionToHost();
+				Console.WriteLine(ex.Message);
 			}
+
 		}
 
 		public async void SendMessage()
