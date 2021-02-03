@@ -10,9 +10,9 @@ Simpele berichten naar de server sturen mogelijk maken door het protecol
 
 Connectie gracefull afsluiten op het moment van onderbreking
 
-meerdere clients mogelijk maken
+meerdere clients mogelijk maken--
 
-buffersize implementeren
+buffersize implementeren (ook bijwerken in de client)
 
 
 

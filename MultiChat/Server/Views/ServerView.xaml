@@ -31,6 +31,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- <Label Grid.Row="0">Name</Label>
@@ -45,7 +46,8 @@
                 <Label Grid.Row="6">Buffer size</Label>
                 <TextBox Grid.Row="7" x:Name="BufferSize" Text="{Binding Path=BufferSize, Mode=TwoWay}" Margin="5"/>
 
-                <Button Grid.Row="8" x:Name="ServerConnect" Content="{Binding Path=ConnectionLabel}" Command="{Binding Path=ConnectionCommand}" Padding="5" />
+                <Button Grid.Row="8" x:Name="SetBufferSize" Content="Set buffer size" Command="{Binding Path=SetBufferSizeCommand}" Padding="5" Margin="5"/>
+                <Button Grid.Row="9" x:Name="ServerConnec2t" Content="{Binding Path=ConnectionLabel}" Command="{Binding Path=ConnectionCommand}" Padding="5" Margin="5"/>
             </Grid>
         </GroupBox>
 

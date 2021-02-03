@@ -7,6 +7,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using static Shared.HelperFunctions.Validation;
+using Shared.ExtensionMethods;
+using System.Windows;
+using System.Net.NetworkInformation;
 
 namespace Client.Services
 {
@@ -44,8 +47,8 @@ namespace Client.Services
         {
             this.AddMessage = addMessage;
             this.UpdateVMState = updateVMState;
-            Console.WriteLine(DateTime.Now.ToString());
-            Console.WriteLine(DateTime.Parse(DateTime.Now.ToString()));
+            //Console.WriteLine(DateTime.Now.ToString());
+            //Console.WriteLine(DateTime.Parse(DateTime.Now.ToString()));
         }
 
         #endregion
@@ -59,7 +62,12 @@ namespace Client.Services
                 this.bufferSize = userInput.BufferSize;
                 
                 tcpClient = new TcpClient();
-                tcpClient.Connect(userInput.Address, userInput.Port);
+                await tcpClient.ConnectAsync(userInput.Address, userInput.Port);
+
+                if(tcpClient.GetState() != TcpState.Established)
+                {
+                    throw new Exception();
+                }
                 
                 clientActive = true;
                 UpdateVMState(true, true);
@@ -70,13 +78,13 @@ namespace Client.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("ERROR");
-                Console.WriteLine(ex.Message);
+                UpdateVMState(true, false);
+                MessageBox.Show("Couln't connect to the server");
                 throw ex;
             }
         }
 
-        public async Task StopConnectionToHost()
+        public void StopConnectionToHost()
         {
             UpdateVMState(false, false);
             clientActive = false;
@@ -95,13 +103,22 @@ namespace Client.Services
 
             while (clientActive)
             {
-                int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
-                message = Encoding.ASCII.GetString(buffer, 0, readBytes);
-                Console.WriteLine(message);
+                if (tcpClient.GetState() == TcpState.Established)
+                {
+                    Console.WriteLine("reading");
+                    int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+                    message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+                    Console.WriteLine(message);
+                }
+                else
+                {
+                    MessageBox.Show("The server disconnected");
+                    StopConnectionToHost();
+                    break;
+                }
+
 
             }
-
-
         }
 
 
@@ -122,5 +139,10 @@ namespace Client.Services
         }
 
         
+    }
+
+    public class ClientComService
+    {
+
     }
 }

@@ -46,9 +46,14 @@ namespace Shared.HelperFunctions
             IPAddress address = IPAddress.Parse(serverAddress);
             if (port <= 0 || port >= 65535)
                 throw new Exception($"Port: {port} not valid");
-            if (bufferSize <= 0 || bufferSize >= 10000)
+            if (!ValidateBufferSize(bufferSize))
                 throw new Exception("Buffersize should be between 1 and 10.000");
             return new UserInput(address, port, bufferSize);
+        }
+
+        public static bool ValidateBufferSize(int bufferSize)
+        {
+            return !(bufferSize <= 0 || bufferSize >= 10000);
         }
     }
 }

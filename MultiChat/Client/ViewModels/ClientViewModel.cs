@@ -111,11 +111,12 @@ namespace Client.ViewModels
 				}
 				else
 				{
-					await clientService.StopConnectionToHost();
+					clientService.StopConnectionToHost();
 				}
 			}
 			catch (Exception ex)
 			{
+				Console.Write("Connect or Disconnect: ");
 				Console.WriteLine(ex.Message);
 			}
 

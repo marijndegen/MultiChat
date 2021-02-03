@@ -12,19 +12,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using static Shared.HelperFunctions.Validation;
 using Shared.ExtensionMethods;
+using System.Windows;
 
 namespace Server.Services
 {
     public class ServerService
     {
         #region Service vars
-        private int bufferSize;
+        //private int bufferSize;
 
-        public int BufferSize
-        {
-            get { return bufferSize; }
-            set { bufferSize = value; }
-        }
+        //public int BufferSize
+        //{
+        //    get { return bufferSize; }
+        //    set { bufferSize = value; }
+        //}
 
 
         #endregion
@@ -50,14 +51,14 @@ namespace Server.Services
         #endregion
 
         #region Starthosting and Stophosting controls
-        public void StartHosting(UserInput input)
+        public void StartHosting(string serverAddress, int serverPort, int bufferSize)
         {
 
             try
             {
                 UpdateVMState(false, false);
+                UserInput input = Validation.ValidateUserInput(serverAddress, serverPort, bufferSize);
                 serverComService = new ServerComService();
-                this.bufferSize = input.BufferSize;
                 tcpListener = new TcpListener(input.Address, input.Port);
                 tcpListener.Start();
 
@@ -69,6 +70,7 @@ namespace Server.Services
             }
             catch (Exception ex)
             {
+                MessageBox.Show(ex.Message);
                 throw ex;
             }
 
@@ -82,12 +84,18 @@ namespace Server.Services
             tcpListener = null;
             UpdateVMState(true, false);
         }
+
+        public void SetBufferSize(int bufferSize)
+        {
+
+        }
         #endregion
 
     }
 
     class ServerComService
     {
+        #region Com vars
         private bool isHosting;
 
         public bool IsHosting
@@ -95,6 +103,15 @@ namespace Server.Services
             get { return isHosting; }
             set { isHosting = value; }
         }
+
+        private int bufferSize;
+
+        public int BufferSize
+        {
+            get { return bufferSize; }
+            set { bufferSize = value; }
+        }
+
 
         private ConcurrentDictionary<Guid, MemberModel> memberModels;
 
@@ -104,6 +121,7 @@ namespace Server.Services
             set { memberModels = value; }
         }
 
+        #endregion
 
         public async Task Hosting(TcpListener tcpListener, CancellationToken hostingToken)
         {
@@ -143,10 +161,11 @@ namespace Server.Services
             }
         }
 
-        //TODO place this method in member model class.
         public async Task ComListener(MemberModel memberModel)
         {
-            Console.WriteLine($"We got a new client with the name: {memberModel.Name}");
+            string clientName = new String(memberModel.Name);
+            Console.WriteLine($"We got a new client with the name: {clientName}");
+
             int bufferSize = 1024;
             string message;
             byte[] buffer = new byte[bufferSize];
@@ -168,13 +187,16 @@ namespace Server.Services
                         MemberModel broadCastMember = entry.Value;
                         if(broadCastMember.TcpClient.GetState() == TcpState.Established)
                         {
+                            NetworkStream networkStreamToBroadCastTo = broadCastMember.TcpClient.GetStream();
                             byte[] bufferToSend = Encoding.ASCII.GetBytes(message);
-                            networkStream.Write(bufferToSend, 0, bufferToSend.Length);
+                            networkStreamToBroadCastTo.Write(bufferToSend, 0, bufferToSend.Length);
                         }
-                        else
-                        {
-                            throw new Exception($"A client {memberModel.Name}");
-                        }
+
+                        //the proces of cleaning up clients should be managed in a seperate thread
+                        //else
+                        //{
+                        //    throw new Exception($"A client {memberModel.Name.ToString()} DISCONNECTED");
+                        //}
                     }
 
                     //for debugging purposes
@@ -196,9 +218,17 @@ namespace Server.Services
             }
         }
 
-        public ServerComService()
+        private async Task/*<IComModel>*/ DecodeCom(NetworkStream networkStream)
         {
+            int bufferSize = 1024;
+            string message;
+            byte[] buffer = new byte[bufferSize];
 
+            int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+            message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+
+            
         }
+
     }
 }

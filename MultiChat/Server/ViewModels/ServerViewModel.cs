@@ -13,6 +13,7 @@ using Shared.Models;
 using Server.Services;
 using Shared.HelperFunctions;
 using static Shared.HelperFunctions.Validation;
+using System.Windows;
 
 namespace Server.ViewModels
 {
@@ -69,7 +70,6 @@ namespace Server.ViewModels
 			get { return isIdle; }
 			set { isIdle = value; OnPropertyChanged("IsIdle"); }
 		}
-
 		#endregion
 
 		#region View operations
@@ -85,9 +85,8 @@ namespace Server.ViewModels
 			try
 			{
 				if (isIdle)
-				{
-					UserInput input = Validation.ValidateUserInput(serverAddress, serverPort, bufferSize);
-					serverService.StartHosting(input);
+				{ 
+					serverService.StartHosting(serverAddress, serverPort, bufferSize);
 				}
 				else
 				{
@@ -100,10 +99,30 @@ namespace Server.ViewModels
 			}
 
 		}
-        #endregion
 
-        #region INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
+		private SetBufferSizeCommand setBufferSizeCommand;
+
+		public SetBufferSizeCommand SetBufferSizeCommand
+		{
+			get { return setBufferSizeCommand; }
+		}
+
+		public void SetBufferSize()
+		{
+			Console.WriteLine($"set buffersize: {bufferSize}");
+			serverService.SetBufferSize(bufferSize);
+			//if (ValidateBufferSize(bufferSize))
+				
+			//else
+			//{
+			//	Console.WriteLine("messagebox");
+			//	MessageBox.Show("message");
+			//}
+		}
+		#endregion
+
+		#region INotifyPropertyChanged
+		public event PropertyChangedEventHandler PropertyChanged;
 
 		private void OnPropertyChanged(string propertyName)
 		{
@@ -125,6 +144,7 @@ namespace Server.ViewModels
 			BufferSize = 1024;
 
 			connectionCommand = new ConnectionCommand(ConnectOrDisconnect);
+			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize);
 			serverService = new ServerService(AddMessage, UpdateVMState);
 		}
         #endregion
@@ -138,6 +158,7 @@ namespace Server.ViewModels
 		public void UpdateVMState(bool enable, bool operating)
 		{
 			connectionCommand.Enable = enable;
+			setBufferSizeCommand.Enable = operating;
 			if (!operating)
 				ConnectionLabel = "Start Hosting";
 			else
