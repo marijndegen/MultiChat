@@ -121,7 +121,6 @@ namespace Server.Services
                 {
                     hostingToken.ThrowIfCancellationRequested();
                     tcpClient = await tcpListener.AcceptTcpClientAsync();
-                    //NetworkStream networkStream = tcpClient.GetStream();
 
                     newUserCount++;
 
@@ -147,29 +146,22 @@ namespace Server.Services
         //TODO place this method in member model class.
         public async Task ComListener(MemberModel memberModel)
         {
-            Console.WriteLine("we got a client");
-            bool clientConnected = true;
+            Console.WriteLine($"We got a new client with the name: {memberModel.Name}");
             int bufferSize = 1024;
             string message;
             byte[] buffer = new byte[bufferSize];
 
-            //IPGlobalProperties ipProperties = IPGlobalProperties.GetIPGlobalProperties();
-            //TcpConnectionInformation[] tcpConnections = ipProperties.GetActiveTcpConnections().Where(x => x.LocalEndPoint.Equals(memberModel.TcpClient.Client.LocalEndPoint) && x.RemoteEndPoint.Equals(memberModel.TcpClient.Client.RemoteEndPoint)).ToArray();
-
-
             NetworkStream networkStream = memberModel.TcpClient.GetStream();
-
 
             try
             {
-                //TODO while isHosting should be replaced by a pulse message that checks wether the networkStream is still available.
-                //https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.tcpclient.connected?view=net-5.0
-
-                while (isHosting && clientConnected)
+                while (isHosting)
                 {
+                    //todo these two lines of code should be producing a chatmessage class by decoding the content.
                     int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
                     message = Encoding.ASCII.GetString(buffer, 0, readBytes);
 
+                    //todo this whole region has to be implemented in a function that will broadcast the message using the ISendMessageModel.cs
                     foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
                     {
                         
@@ -178,7 +170,10 @@ namespace Server.Services
                         {
                             byte[] bufferToSend = Encoding.ASCII.GetBytes(message);
                             networkStream.Write(bufferToSend, 0, bufferToSend.Length);
-
+                        }
+                        else
+                        {
+                            throw new Exception($"A client {memberModel.Name}");
                         }
                     }
 
@@ -193,7 +188,6 @@ namespace Server.Services
             }
             catch (Exception ex)
             {
-                clientConnected = false;
                 memberModels.TryRemove(memberModel.Guid, out MemberModel memberModelToDelete);
                 memberModel.TcpClient.Close();
                 memberModel = null;
