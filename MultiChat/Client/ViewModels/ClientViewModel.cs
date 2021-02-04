@@ -81,13 +81,14 @@ namespace Client.ViewModels
 		public bool IsIdle
 		{
 			get { return isIdle; }
-			set { isIdle = value; }
+			set { isIdle = value; OnPropertyChanged("IsIdle"); OnPropertyChanged("IsActive"); }
 		}
+		public bool IsActive { get { return !IsIdle; } }
 
-        #endregion
+		#endregion
 
-        #region View operations
-        private ConnectionCommand connectionCommand;
+		#region View operations
+		private ConnectionCommand connectionCommand;
 
 		public ConnectionCommand ConnectionCommand
 		{
@@ -182,6 +183,7 @@ namespace Client.ViewModels
 		public void UpdateVMState(bool enable, bool operating)
 		{
 			connectionCommand.Enable = enable;
+			messageCommand.Enable = operating;
 			setBufferSizeCommand.Enable = operating;
 			if (!operating)
 				ConnectionLabel = "Start connection with host";

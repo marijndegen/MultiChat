@@ -11,7 +11,7 @@ namespace Client.Commands
     {
         private Action MessageFunction;
 
-        private bool enable = true;
+        private bool enable = false;
 
         public bool Enable
         {
