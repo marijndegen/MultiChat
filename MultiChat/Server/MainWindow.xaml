@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
         xmlns:vw="clr-namespace:Server.Views"
-        Title="MainWindow" Height="350" Width="600">
+        Title="MainWindow" Height="425" Width="800">
         <vw:ServerView></vw:ServerView>
 </Window>
 

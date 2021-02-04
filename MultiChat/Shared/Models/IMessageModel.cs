@@ -6,6 +6,8 @@ namespace Shared.Models
 {
     public interface IMessageModel : IComModel
     {
-        
+        DateTime GetDateTime();
+
+        char[] GetText();
     }
 }

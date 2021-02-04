@@ -18,18 +18,6 @@ namespace Server.Services
 {
     public class ServerService
     {
-        #region Service vars
-        //private int bufferSize;
-
-        //public int BufferSize
-        //{
-        //    get { return bufferSize; }
-        //    set { bufferSize = value; }
-        //}
-
-
-        #endregion
-
         #region Delegates
         private Action<IChatMessage> AddMessage;
         private Action<bool, bool> UpdateVMState;
@@ -38,7 +26,7 @@ namespace Server.Services
         #region TCP vars and constructor
         private TcpListener tcpListener;
         private ServerComService serverComService;
-        private Task comListner;
+        private Task hostingTask;
         private CancellationTokenSource hostingTokenSource;
         private CancellationToken hostingToken;
 
@@ -46,6 +34,9 @@ namespace Server.Services
         {
             this.AddMessage = addMessage;
             this.UpdateVMState = updateVMState;
+            serverComService = new ServerComService();
+
+
         }
 
         #endregion
@@ -58,19 +49,21 @@ namespace Server.Services
             {
                 UpdateVMState(false, false);
                 UserInput input = Validation.ValidateUserInput(serverAddress, serverPort, bufferSize);
-                serverComService = new ServerComService();
+                serverComService.IsHosting = true;
+
                 tcpListener = new TcpListener(input.Address, input.Port);
                 tcpListener.Start();
 
                 hostingTokenSource = new CancellationTokenSource();
                 hostingToken = hostingTokenSource.Token;
 
-                comListner = Task.Run(() => serverComService.Hosting(tcpListener, hostingToken), hostingToken);
+                hostingTask = Task.Run(() => serverComService.Hosting(tcpListener, hostingToken), hostingToken);
                 UpdateVMState(true, true);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+                UpdateVMState(true, false);
                 throw ex;
             }
 
@@ -78,16 +71,19 @@ namespace Server.Services
 
         public void StopHosting()
         {
-            hostingTokenSource.Cancel();
             UpdateVMState(false, false);
+
+            serverComService.IsHosting = false;
+            hostingTokenSource.Cancel();
             tcpListener.Stop();
             tcpListener = null;
+
             UpdateVMState(true, false);
         }
 
         public void SetBufferSize(int bufferSize)
         {
-
+            //todo implement
         }
         #endregion
 
@@ -126,8 +122,6 @@ namespace Server.Services
         public async Task Hosting(TcpListener tcpListener, CancellationToken hostingToken)
         {
             Console.WriteLine("hosting");
-
-            isHosting = true;
             memberModels = new ConcurrentDictionary<Guid, MemberModel>();
 
             byte newUserCount = 0;
@@ -145,7 +139,7 @@ namespace Server.Services
                     MemberModel memberModel = new MemberModel($"New user: {newUserCount}", tcpClient);
                     memberModels.TryAdd(memberModel.Guid, memberModel);
 
-                    Task messageListener = Task.Run(() => ComListener(memberModel));
+                    Task messageListener = Task.Run(() => ComListener(memberModel, hostingToken), hostingToken);
                 }
             }
             catch (Exception ex)
@@ -156,12 +150,16 @@ namespace Server.Services
             }
             finally
             {
-                if (tcpClient.GetType() == typeof(TcpClient))
-                    tcpClient.Close();
+                foreach (KeyValuePair<Guid, MemberModel> entry  in memberModels)
+                {
+                    MemberModel memberModel = entry.Value;
+                    if (memberModel.TcpClient.GetType() == typeof(TcpClient))
+                        memberModel.TcpClient.Close();
+                }
             }
         }
 
-        public async Task ComListener(MemberModel memberModel)
+        public async Task ComListener(MemberModel memberModel, CancellationToken hostingToken)
         {
             string clientName = new String(memberModel.Name);
             Console.WriteLine($"We got a new client with the name: {clientName}");
@@ -176,6 +174,8 @@ namespace Server.Services
             {
                 while (isHosting)
                 {
+                    hostingToken.ThrowIfCancellationRequested();
+
                     //todo these two lines of code should be producing a chatmessage class by decoding the content.
                     int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
                     message = Encoding.ASCII.GetString(buffer, 0, readBytes);
@@ -189,14 +189,8 @@ namespace Server.Services
                         {
                             NetworkStream networkStreamToBroadCastTo = broadCastMember.TcpClient.GetStream();
                             byte[] bufferToSend = Encoding.ASCII.GetBytes(message);
-                            networkStreamToBroadCastTo.Write(bufferToSend, 0, bufferToSend.Length);
+                            await networkStreamToBroadCastTo.WriteAsync(bufferToSend, 0, bufferToSend.Length);
                         }
-
-                        //the proces of cleaning up clients should be managed in a seperate thread
-                        //else
-                        //{
-                        //    throw new Exception($"A client {memberModel.Name.ToString()} DISCONNECTED");
-                        //}
                     }
 
                     //for debugging purposes

@@ -10,6 +10,7 @@ using static Shared.HelperFunctions.Validation;
 using Shared.ExtensionMethods;
 using System.Windows;
 using System.Net.NetworkInformation;
+using System.Threading;
 
 namespace Client.Services
 {
@@ -42,6 +43,8 @@ namespace Client.Services
         #region TCP vars and constructor 
         private TcpClient tcpClient;
         private NetworkStream networkStream;
+        private CancellationTokenSource clientTokenSource;
+        private CancellationToken clientToken;
 
         public ClientService(Action<string> addMessage, Action<bool, bool> updateVMState)
         {
@@ -55,9 +58,9 @@ namespace Client.Services
 
         public async Task StartConnectionToHost(string serverAddress, int port, int bufferSize)
         {
-            UpdateVMState(false, false);
             try
             {
+                UpdateVMState(false, false);
                 UserInput userInput = Validation.ValidateUserInput(serverAddress, port, bufferSize);
                 this.bufferSize = userInput.BufferSize;
                 
@@ -74,51 +77,89 @@ namespace Client.Services
 
                 networkStream = tcpClient.GetStream();
 
-                Task messageListner = Task.Run(() => this.ConnectionToHost());
+                clientTokenSource = new CancellationTokenSource();
+                clientToken = clientTokenSource.Token;
+
+                Task messageListner = Task.Run(() => ConnectionToHost(clientToken), clientToken);
             }
             catch (Exception ex)
             {
                 UpdateVMState(true, false);
                 MessageBox.Show("Couln't connect to the server");
+                //StopConnectionToHost();
                 throw ex;
             }
         }
 
         public void StopConnectionToHost()
         {
-            UpdateVMState(false, false);
-            clientActive = false;
-            tcpClient.GetStream().Close();
-            tcpClient.Close();
-            tcpClient = null;
-            UpdateVMState(true, false);
+            Console.WriteLine("stopping!!");
+            try
+            {
+                Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateVMState(false, false)));
+               
+                clientActive = false;
+
+
+                tcpClient.GetStream().Close();
+                tcpClient.Close();
+
+                tcpClient = null;
+               
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in stopping client ");
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateVMState(true, false)));
+            }
         }
 
-        public async Task ConnectionToHost()
+        public void SetBufferSize(int bufferSize)
+        {
+            //todo implement
+        }
+
+        public async Task ConnectionToHost(CancellationToken clientToken)
         {
 
             int bufferSize = 1024;
             string message = "";
             byte[] buffer = new byte[bufferSize];
 
-            while (clientActive)
+            try
             {
-                if (tcpClient.GetState() == TcpState.Established)
+                while (clientActive && !clientToken.IsCancellationRequested)
                 {
-                    Console.WriteLine("reading");
-                    int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
-                    message = Encoding.ASCII.GetString(buffer, 0, readBytes);
-                    Console.WriteLine(message);
+                    if (tcpClient.GetState() == TcpState.Established)
+                    {
+                        clientToken.ThrowIfCancellationRequested();
+
+                        Console.WriteLine("reading");
+                        int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+                        message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+                        Console.WriteLine(message);
+                    }
+                    else
+                    {
+                        throw new Exception("No connection from server");
+                    }
                 }
-                else
+            }
+            catch (Exception ex)
+            {
+                if (clientActive)
                 {
+                    Console.WriteLine(ex.Message);
                     MessageBox.Show("The server disconnected");
                     StopConnectionToHost();
-                    break;
                 }
-
-
             }
+
+
         }
 
 

@@ -6,5 +6,6 @@ namespace Shared.Models
 {
     public interface ISendComModel : IComModel
     {
+        MemberModel GetMemberModel();
     }
 }

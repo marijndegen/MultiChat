@@ -6,8 +6,8 @@ namespace Shared.Models
 {
     public interface IComModel
     {
-        byte GetType();
+        byte GetComType();
 
-        char[] toCharArray();
+        char[] ToCharArray();
     }
 }

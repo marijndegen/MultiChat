@@ -63,9 +63,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Models\Member.cs" />
-    <Compile Include="Models\Message.cs" />
+    <Compile Include="Models\ServerBroadcastMessageModel.cs" />
     <Compile Include="Models\ServerCom\ServerChatMessage.cs" />
+    <Compile Include="Models\ServerRecieveHandshakeModel.cs" />
+    <Compile Include="Models\ServerRecieveMessageModel.cs" />
+    <Compile Include="Models\ServerSendMemberListModel.cs" />
     <Compile Include="Services\ServerService.cs" />
     <Compile Include="ViewModels\ServerViewModel.cs" />
     <Compile Include="Views\ServerView.xaml.cs">

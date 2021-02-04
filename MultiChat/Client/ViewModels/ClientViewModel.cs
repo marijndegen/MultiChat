@@ -94,13 +94,6 @@ namespace Client.ViewModels
 			get { return connectionCommand; }
 		}
 
-		private MessageCommand messageCommand;
-
-		public MessageCommand MessageCommand
-		{
-			get { return messageCommand; }
-		}
-
 		public async void ConnectOrDisconnect()
 		{
 			try
@@ -122,11 +115,30 @@ namespace Client.ViewModels
 
 		}
 
+		private MessageCommand messageCommand;
+
+		public MessageCommand MessageCommand
+		{
+			get { return messageCommand; }
+		}
+
 		public async void SendMessage()
 		{
 			await clientService.SendCom(message);
 		}
 
+		private SetBufferSizeCommand setBufferSizeCommand;
+
+		public SetBufferSizeCommand SetBufferSizeCommand
+		{
+			get { return setBufferSizeCommand; }
+		}
+
+		public async void SetBufferSize()
+		{
+			clientService.SetBufferSize(bufferSize);
+		}
+		
 		#endregion
 
 		#region INotifyPropertyChanged
@@ -153,7 +165,9 @@ namespace Client.ViewModels
 			Message = "Hello World!";
 
 			connectionCommand = new ConnectionCommand(ConnectOrDisconnect);
-			messageCommand = new MessageCommand(SendMessage);	
+			messageCommand = new MessageCommand(SendMessage);
+			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize);
+
 			clientService = new ClientService(AddMessage, UpdateVMState);
 
 		}
@@ -168,6 +182,7 @@ namespace Client.ViewModels
 		public void UpdateVMState(bool enable, bool operating)
 		{
 			connectionCommand.Enable = enable;
+			setBufferSizeCommand.Enable = operating;
 			if (!operating)
 				ConnectionLabel = "Start connection with host";
 			else
