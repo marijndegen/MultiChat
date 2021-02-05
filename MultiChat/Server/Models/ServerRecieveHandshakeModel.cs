@@ -9,9 +9,16 @@ namespace Server.Models
 {
     class ServerRecieveHandshakeModel : IComModel
     {
+        private static byte comType = 1;
+
+        public ServerRecieveHandshakeModel()
+        {
+
+        }
+
         public byte GetComType()
         {
-            throw new NotImplementedException();
+            return comType;
         }
 
         public char[] ToCharArray()

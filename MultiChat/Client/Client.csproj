@@ -64,7 +64,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Commands\MessageCommand.cs" />
-    <Compile Include="Models\ClientCom\ClientChatMessage.cs" />
+    <Compile Include="Models\ClientChatMessage.cs" />
+    <Compile Include="Models\ClientRecieveMemberListModel.cs" />
+    <Compile Include="Models\ClientRecieveMessageModel.cs" />
+    <Compile Include="Models\ClientSendHandshakeModel.cs" />
+    <Compile Include="Models\ClientSendMessageModel.cs" />
     <Compile Include="Services\ClientService.cs" />
     <Compile Include="ViewModels\ClientViewModel.cs" />
     <Compile Include="Views\ClientView.xaml.cs">

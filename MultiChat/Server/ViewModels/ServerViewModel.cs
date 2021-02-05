@@ -111,13 +111,7 @@ namespace Server.ViewModels
 		{
 			Console.WriteLine($"set buffersize: {bufferSize}");
 			serverService.SetBufferSize(bufferSize);
-			//if (ValidateBufferSize(bufferSize))
-				
-			//else
-			//{
-			//	Console.WriteLine("messagebox");
-			//	MessageBox.Show("message");
-			//}
+
 		}
 		#endregion
 

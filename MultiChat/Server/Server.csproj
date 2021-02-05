@@ -64,7 +64,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Models\ServerBroadcastMessageModel.cs" />
-    <Compile Include="Models\ServerCom\ServerChatMessage.cs" />
+    <Compile Include="Models\ServerChatMessage.cs" />
     <Compile Include="Models\ServerRecieveHandshakeModel.cs" />
     <Compile Include="Models\ServerRecieveMessageModel.cs" />
     <Compile Include="Models\ServerSendMemberListModel.cs" />

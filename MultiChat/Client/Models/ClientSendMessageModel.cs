@@ -5,14 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Server.Models
+namespace Client.Models
 {
-    //todo implement interfaces on each class, make a listner and a sender on each class.
-    public class ServerBroadcastMessageModel : ISendMessageModel
+    public class ClientSendMessageModel : ISendMessageModel
     {
-        private static byte comType = 4;
+        private static byte comType = 3;
 
-        public ServerBroadcastMessageModel()
+        public ClientSendMessageModel()
         {
 
         }

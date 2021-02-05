@@ -11,30 +11,13 @@ using Shared.ExtensionMethods;
 using System.Windows;
 using System.Net.NetworkInformation;
 using System.Threading;
+using Shared.Models;
+using Client.Models;
 
 namespace Client.Services
 {
     class ClientService
     {
-        #region Service vars
-        private bool clientActive = false;
-
-        public bool ClientActive
-        {
-            get { return clientActive; }
-            set { clientActive = value; }
-        }
-
-        private int bufferSize;
-
-        public int BufferSize
-        {
-            get { return bufferSize; }
-            set { bufferSize = value; }
-        }
-
-        #endregion
-
         #region Delegates
         private Action<string> AddMessage;
         private Action<bool, bool> UpdateVMState;
@@ -43,6 +26,7 @@ namespace Client.Services
         #region TCP vars and constructor 
         private TcpClient tcpClient;
         private NetworkStream networkStream;
+        private ClientComService clientComService;
         private CancellationTokenSource clientTokenSource;
         private CancellationToken clientToken;
 
@@ -50,43 +34,46 @@ namespace Client.Services
         {
             this.AddMessage = addMessage;
             this.UpdateVMState = updateVMState;
+            clientComService = new ClientComService(this.StopConnectionToHost);
             //Console.WriteLine(DateTime.Now.ToString());
             //Console.WriteLine(DateTime.Parse(DateTime.Now.ToString()));
         }
 
         #endregion
 
-        public async Task StartConnectionToHost(string serverAddress, int port, int bufferSize)
+        #region Starthosting, stophosting, setBufferSize, Sendcom
+        public async Task StartConnectionToHost(string clientName, string serverAddress, int port, int bufferSize)
         {
             try
             {
                 UpdateVMState(false, false);
                 UserInput userInput = Validation.ValidateUserInput(serverAddress, port, bufferSize);
-                this.bufferSize = userInput.BufferSize;
-                
+
                 tcpClient = new TcpClient();
                 await tcpClient.ConnectAsync(userInput.Address, userInput.Port);
 
-                if(tcpClient.GetState() != TcpState.Established)
+                if (tcpClient.GetState() != TcpState.Established)
                 {
                     throw new Exception();
                 }
-                
-                clientActive = true;
-                UpdateVMState(true, true);
 
                 networkStream = tcpClient.GetStream();
 
                 clientTokenSource = new CancellationTokenSource();
                 clientToken = clientTokenSource.Token;
 
-                Task messageListner = Task.Run(() => ConnectionToHost(clientToken), clientToken);
+                MemberModel memberModel = new MemberModel(clientName, tcpClient);
+                clientComService.BufferSize = bufferSize;
+                UpdateVMState(true, true);
+
+                Task messageListner = Task.Run(() => clientComService.ConnectionToHost(memberModel, clientToken), clientToken);
+
+                await clientComService.sendCom(new ClientSendHandshakeModel(memberModel));
             }
             catch (Exception ex)
             {
                 UpdateVMState(true, false);
                 MessageBox.Show("Couln't connect to the server");
-                //StopConnectionToHost();
                 throw ex;
             }
         }
@@ -97,15 +84,14 @@ namespace Client.Services
             try
             {
                 Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateVMState(false, false)));
-               
-                clientActive = false;
 
+                clientComService.ClientActive = false;
 
                 tcpClient.GetStream().Close();
                 tcpClient.Close();
 
                 tcpClient = null;
-               
+
             }
             catch (Exception ex)
             {
@@ -120,21 +106,84 @@ namespace Client.Services
 
         public void SetBufferSize(int bufferSize)
         {
-            //todo implement
+            if (ValidateBufferSize(bufferSize))
+                clientComService.BufferSize = bufferSize;
+            else
+                MessageBox.Show("Invalid bufferSize");
         }
 
-        public async Task ConnectionToHost(CancellationToken clientToken)
+        public async Task SendCom(string message)
         {
+            //try
+            //{
+            //    //Console.WriteLine("connected");
+            //    byte[] buffer = Encoding.ASCII.GetBytes(message);
+            //    await networkStream.WriteAsync(buffer, 0, buffer.Length);
+            //    Console.WriteLine("SENDED");
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw ex;
+            //}
+        }
+        #endregion
 
+    }
+
+    public class ClientComService
+    {
+        private bool isListening;
+
+        public bool IsListening
+        {
+            get { return isListening; }
+            set { isListening = value; }
+        }
+
+        private int bufferSize;
+
+        public int BufferSize
+        {
+            get { return bufferSize; }
+            set { bufferSize = value; }
+        }
+
+        private bool clientActive = false;
+
+        public bool ClientActive
+        {
+            get { return clientActive; }
+            set { clientActive = value; }
+        }
+
+        private Action stopConnectionToHost;
+
+        public Action StopConnectionToHost
+        {
+            get { return stopConnectionToHost; }
+        }
+
+
+        public ClientComService(Action stopConnectionToHost)
+        {
+            this.stopConnectionToHost = stopConnectionToHost;
+        }
+
+        public async Task ConnectionToHost(MemberModel memberModel, CancellationToken clientToken)
+        {
             int bufferSize = 1024;
             string message = "";
             byte[] buffer = new byte[bufferSize];
+            clientActive = true;
 
+            NetworkStream networkStream = memberModel.TcpClient.GetStream();
+
+            bool serverThrewError = false;
             try
             {
                 while (clientActive && !clientToken.IsCancellationRequested)
                 {
-                    if (tcpClient.GetState() == TcpState.Established)
+                    if (memberModel.TcpClient.GetState() == TcpState.Established)
                     {
                         clientToken.ThrowIfCancellationRequested();
 
@@ -145,45 +194,85 @@ namespace Client.Services
                     }
                     else
                     {
+                        serverThrewError = true;
                         throw new Exception("No connection from server");
                     }
                 }
             }
             catch (Exception ex)
             {
-                if (clientActive)
-                {
-                    Console.WriteLine(ex.Message);
-                    MessageBox.Show("The server disconnected");
-                    StopConnectionToHost();
-                }
+                    //MessageBox.Show("Connection with server lost");
+                MessageBox.Show("Connection with the server is lost", "Client", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning, System.Windows.MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+
+                StopConnectionToHost();
             }
-
-
         }
 
-
-
-        public async Task SendCom(string message)
+        public async Task sendCom(ISendComModel sendComModel)
         {
             try
             {
-                //Console.WriteLine("connected");
-                byte[] buffer = Encoding.ASCII.GetBytes(message);
-                await networkStream.WriteAsync(buffer, 0, buffer.Length);
-                Console.WriteLine("SENDED");
+                NetworkStream networkStream = sendComModel.GetMemberModel().TcpClient.GetStream();
+                char[] messageToSend = sendComModel.ToCharArray();
+                string ms = new String(messageToSend);
+                byte[] bufferToSend = Encoding.ASCII.GetBytes(messageToSend);
+                Console.WriteLine("THE MESSAGE");
+                Console.WriteLine($"Message {ms}");
+                Console.WriteLine(messageToSend.Length);
+
+                //If the message is smaller than the specified buffersize, send the message as is to save characters
+                if (bufferSize >= messageToSend.Length)
+                {
+                    await networkStream.WriteAsync(bufferToSend, 0, bufferToSend.Length);
+                }
+                else
+                {
+                    int remainingChars = messageToSend.Length;
+                    for (int i = 0; i < (int)Math.Ceiling((decimal)messageToSend.Length / bufferSize); i++)
+                    {
+                        int hallo = (int)Math.Ceiling((decimal)messageToSend.Length / bufferSize);
+                        Console.WriteLine($"iterations { hallo}");
+
+                        Console.WriteLine();
+
+                        int roundIndex = (i * bufferSize);
+
+                        int theRealBufferSize;
+                        if(remainingChars > bufferSize)
+                        {
+                            theRealBufferSize = bufferSize;
+                        }
+                        else
+                        {
+                            theRealBufferSize = remainingChars;
+                        }
+
+                        remainingChars -= theRealBufferSize;
+                        Console.WriteLine($"Remaining chars: {remainingChars}");
+
+                        Console.WriteLine("writing");
+                        Console.WriteLine(theRealBufferSize);
+                        await networkStream.WriteAsync(bufferToSend, roundIndex, theRealBufferSize);
+
+                    }
+                }
+
+
+                
+
+                
             }
             catch (Exception ex)
             {
+                Console.WriteLine("TROEP");
                 throw ex;
             }
+
+            Console.WriteLine("SENDED");
         }
 
-        
     }
 
-    public class ClientComService
-    {
 
-    }
+
 }

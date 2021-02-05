@@ -40,10 +40,5 @@ namespace Shared.Models
 			this.tcpClient = tcpClient;
 		}
 
-		public void Send(ISendComModel message, int bufferSize)
-		{
-			throw new NotImplementedException();
-		}
-
 	}
 }

@@ -9,9 +9,16 @@ namespace Server.Models
 {
     public class ServerRecieveMessageModel : IMessageModel
     {
+        private static byte comType = 3;
+
+        public ServerRecieveMessageModel()
+        {
+        
+        }
+
         public byte GetComType()
         {
-            throw new NotImplementedException();
+            return comType;
         }
 
         public DateTime GetDateTime()

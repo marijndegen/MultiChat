@@ -101,7 +101,7 @@ namespace Client.ViewModels
 			{
 				if (isIdle)
 				{
-					await clientService.StartConnectionToHost(ServerAddress, ServerPort, BufferSize);
+					await clientService.StartConnectionToHost(clientName, ServerAddress, ServerPort, BufferSize);
 				}
 				else
 				{
