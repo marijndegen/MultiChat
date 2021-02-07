@@ -69,9 +69,18 @@
         </GroupBox>
         <!--</StackPanel>-->
 
-        <GroupBox Grid.Column="1" Grid.RowSpan="2" Header="Chats" Padding="10" Margin="10">
-            <ListBox x:Name="ChatList">
+        <GroupBox Grid.Column="1" Grid.RowSpan="2" Header="Chats" Padding="10" Margin="10" ScrollBar.Scroll="GroupBox_Scroll">
+            <!--<ListBox x:Name="ChatList" ItemsSource="{Binding Messages}">
                 <ListBoxItem>No chat messages yet...</ListBoxItem>
+            </ListBox>-->
+            <ListBox Margin="20" ItemsSource="{Binding Messages}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Path=Message}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
             </ListBox>
         </GroupBox>
     </Grid>

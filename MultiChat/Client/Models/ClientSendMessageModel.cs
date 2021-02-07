@@ -11,9 +11,20 @@ namespace Client.Models
     {
         private static byte comType = 3;
 
-        public ClientSendMessageModel()
-        {
+        private string message;
 
+        public string Message
+        {
+            get { return message; }
+            set { message = value; }
+        }
+
+        private MemberModel memberModel;
+
+        public ClientSendMessageModel(string message, MemberModel memberModel)
+        {
+            this.message = message;
+            this.memberModel = memberModel;
         }
 
         public byte GetComType()
@@ -28,7 +39,7 @@ namespace Client.Models
 
         public MemberModel GetMemberModel()
         {
-            throw new NotImplementedException();
+            return memberModel;
         }
 
         public char[] GetText()
@@ -38,7 +49,8 @@ namespace Client.Models
 
         public char[] ToCharArray()
         {
-            throw new NotImplementedException();
+            string com = $"^^^{comType}~{message}$$$";
+            return com.ToCharArray();
         }
     }
 }

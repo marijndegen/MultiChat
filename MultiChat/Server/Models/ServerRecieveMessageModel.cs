@@ -11,9 +11,18 @@ namespace Server.Models
     {
         private static byte comType = 3;
 
-        public ServerRecieveMessageModel()
+        private string message;
+
+        public string Message
         {
-        
+            get { return message; }
+            set { message = value; }
+        }
+
+
+        public ServerRecieveMessageModel(string message)
+        {
+            this.message = message;
         }
 
         public byte GetComType()

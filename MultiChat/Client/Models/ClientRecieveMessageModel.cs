@@ -11,9 +11,18 @@ namespace Client.Models
     {
         private static byte comType = 4;
 
-        public ClientRecieveMessageModel()
-        {
+        private string message;
 
+        public string Message
+        {
+            get { return message; }
+            set { message = value; }
+        }
+
+
+        public ClientRecieveMessageModel(string message)
+        {
+            this.message = message;
         }
 
         public byte GetComType()

@@ -24,5 +24,10 @@ namespace Client.Views
         {
             InitializeComponent();
         }
+
+        private void GroupBox_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e)
+        {
+
+        }
     }
 }

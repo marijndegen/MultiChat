@@ -64,7 +64,6 @@ namespace Client.ViewModels
 			set { messages = value; OnPropertyChanged("Messages"); }
 		}
 
-
 		#endregion
 
 		#region View labels and State
@@ -171,13 +170,17 @@ namespace Client.ViewModels
 
 			clientService = new ClientService(AddMessage, UpdateVMState);
 
+			messages = new ObservableCollection<ClientChatMessage>();
+
 		}
         #endregion
 
         #region Service operations
         public void AddMessage(string text)
 		{
-			
+
+			messages.Add(new ClientChatMessage(text));
+			OnPropertyChanged("Messages");
 		}
 
 		public void UpdateVMState(bool enable, bool operating)

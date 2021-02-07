@@ -34,7 +34,7 @@ namespace Client.Services
         {
             this.AddMessage = addMessage;
             this.UpdateVMState = updateVMState;
-            clientComService = new ClientComService(this.StopConnectionToHost);
+            clientComService = new ClientComService(this.StopConnectionToHost, this.AddMessage);
             //Console.WriteLine(DateTime.Now.ToString());
             //Console.WriteLine(DateTime.Parse(DateTime.Now.ToString()));
         }
@@ -66,6 +66,8 @@ namespace Client.Services
                 clientComService.BufferSize = bufferSize;
                 
                 Task messageListner = Task.Run(() => clientComService.ConnectionToHost(memberModel, clientToken), clientToken);
+
+                clientComService.MemberModel = memberModel;
 
                 await clientComService.sendCom(new ClientSendHandshakeModel(memberModel));
                 UpdateVMState(true, true);
@@ -113,6 +115,9 @@ namespace Client.Services
 
         public async Task SendCom(string message)
         {
+            //await clientComService.sendCom(new ClientSendHandshakeModel(memberModel));
+            await clientComService.sendMessage(message);
+
             //try
             //{
             //    //Console.WriteLine("connected");
@@ -155,6 +160,15 @@ namespace Client.Services
             set { clientActive = value; }
         }
 
+        private MemberModel memberModel;
+
+        public MemberModel MemberModel
+        {
+            get { return memberModel; }
+            set { memberModel = value; }
+        }
+
+
         private Action stopConnectionToHost;
 
         public Action StopConnectionToHost
@@ -162,10 +176,13 @@ namespace Client.Services
             get { return stopConnectionToHost; }
         }
 
+        private Action<string> addMessage;
 
-        public ClientComService(Action stopConnectionToHost)
+
+        public ClientComService(Action stopConnectionToHost, Action<string> addMessage)
         {
             this.stopConnectionToHost = stopConnectionToHost;
+            this.addMessage = addMessage;
         }
 
         public async Task ConnectionToHost(MemberModel memberModel, CancellationToken clientToken)
@@ -181,11 +198,17 @@ namespace Client.Services
             {
                 while (clientActive && !clientToken.IsCancellationRequested)
                 {
+                    Console.WriteLine("doeiii");
                     if (memberModel.TcpClient.GetState() == TcpState.Established)
                     {
                         clientToken.ThrowIfCancellationRequested();
                         IComModel comModel = await DecodeCom(networkStream);
                         
+                        if(comModel is ClientRecieveMessageModel)
+                        {
+                            ClientRecieveMessageModel clientRecieveMessageModel = (ClientRecieveMessageModel)comModel;
+                            await Application.Current.Dispatcher.BeginInvoke(new Action(() => addMessage(clientRecieveMessageModel.Message)));
+                        }
 
                     }
                     else
@@ -210,6 +233,7 @@ namespace Client.Services
 
             do
             {
+                Console.WriteLine("hallo");
                 int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
                 message = Encoding.ASCII.GetString(buffer, 0, readBytes);
                 completeMessage = $"{completeMessage}{message}";
@@ -229,13 +253,33 @@ namespace Client.Services
                     Console.WriteLine(completeMessage);
                 }
 
+
+
             } while (!foundCompleteMessage);
+
+            string strippedMessage = completeMessage.Trim('^', '$');
+            string[] protocolCom = strippedMessage.Split('~');
+
+            if (protocolCom[0] == "4")
+            {
+                return new ClientRecieveMessageModel(protocolCom[1]);
+            }
+            else
+            {
+                return null;
+            }
 
             return null;
         }
 
         //todo refactor code.
         //todo implement the buffersize on the recieving end of client and the sending end of server
+        
+        public async Task sendMessage(string message)
+        {
+
+            this.sendCom(new ClientSendMessageModel(message, this.memberModel));
+        }
 
         public async Task sendCom(ISendComModel sendComModel)
         {

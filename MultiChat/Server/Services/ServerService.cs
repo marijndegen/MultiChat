@@ -180,6 +180,12 @@ namespace Server.Services
                         Console.WriteLine(serverRecieveHandshakeModel.Name.ToCharArray());
                         memberModel.Name = serverRecieveHandshakeModel.Name.ToCharArray();
                         await BroadCastClientNames();
+                    } else if (comModel is ServerRecieveMessageModel)
+                    {
+                        ServerRecieveMessageModel serverRecieveMessageModel = (ServerRecieveMessageModel)comModel;
+                        Console.WriteLine(serverRecieveMessageModel.Message.ToCharArray());
+                        await broadCastMessage(serverRecieveMessageModel);
+
                     }
                 }
                 Console.WriteLine("Client disconnected");
@@ -227,6 +233,9 @@ namespace Server.Services
             if(protocolCom[0] == "1")
             {
                 return new ServerRecieveHandshakeModel(protocolCom[1]);
+            } else if (protocolCom[0] == "3")
+            {
+                return new ServerRecieveMessageModel(protocolCom[1]);
             }
             else
             {
@@ -260,7 +269,7 @@ namespace Server.Services
                     {
                         //NetworkStream networkStreamToBroadCastTo = broadCastMember.TcpClient.GetStream();
                         ISendComModel sendComModel = new ServerSendMemberListModel(arrayNames, broadCastMember);
-                        sendCom(sendComModel);
+                        await sendCom(sendComModel);
 
                         //byte[] bufferToSend = Encoding.ASCII.GetBytes(message);
                         //await networkStreamToBroadCastTo.WriteAsync(bufferToSend, 0, bufferToSend.Length);
@@ -272,6 +281,33 @@ namespace Server.Services
                 Console.WriteLine(ex.Message);
             }
             
+        }
+
+        private async Task broadCastMessage(ServerRecieveMessageModel serverRecieveMessageModel)
+        {
+            
+
+            try
+            {
+                foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
+                {
+
+                    MemberModel broadCastMember = entry.Value;
+                    if (broadCastMember.TcpClient.GetState() == TcpState.Established)
+                    {
+                        //NetworkStream networkStreamToBroadCastTo = broadCastMember.TcpClient.GetStream();
+                        ISendComModel sendComModel = new ServerBroadcastMessageModel(serverRecieveMessageModel.Message, broadCastMember);
+                        await sendCom(sendComModel);
+
+                        //byte[] bufferToSend = Encoding.ASCII.GetBytes(message);
+                        //await networkStreamToBroadCastTo.WriteAsync(bufferToSend, 0, bufferToSend.Length);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         private async Task sendCom(ISendComModel sendComModel)
