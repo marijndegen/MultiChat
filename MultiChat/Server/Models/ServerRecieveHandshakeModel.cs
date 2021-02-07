@@ -7,13 +7,21 @@ using System.Threading.Tasks;
 
 namespace Server.Models
 {
-    class ServerRecieveHandshakeModel : IComModel
+    public class ServerRecieveHandshakeModel : IComModel
     {
         private static byte comType = 1;
 
-        public ServerRecieveHandshakeModel()
-        {
+        private string name;
 
+        public string Name
+        {
+            get { return name; }
+        }
+
+
+        public ServerRecieveHandshakeModel(string name)
+        {
+            this.name = name;
         }
 
         public byte GetComType()

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using static Shared.HelperFunctions.Validation;
 using Shared.ExtensionMethods;
 using System.Windows;
+using Server.Models;
 
 namespace Server.Services
 {
@@ -172,6 +173,14 @@ namespace Server.Services
                 {
                     hostingToken.ThrowIfCancellationRequested();
                     IComModel comModel = await DecodeCom(networkStream);
+
+                    if(comModel is ServerRecieveHandshakeModel)
+                    {
+                        ServerRecieveHandshakeModel serverRecieveHandshakeModel = (ServerRecieveHandshakeModel)comModel;
+                        Console.WriteLine(serverRecieveHandshakeModel.Name.ToCharArray());
+                        memberModel.Name = serverRecieveHandshakeModel.Name.ToCharArray();
+                        await BroadCastClientNames();
+                    }
                 }
                 Console.WriteLine("Client disconnected");
             }
@@ -213,10 +222,116 @@ namespace Server.Services
             } while (!foundCompleteMessage);
 
             string strippedMessage = completeMessage.Trim('^', '$');
-            strippedMessage.Split('~');
+            string[] protocolCom = strippedMessage.Split('~');
 
+            if(protocolCom[0] == "1")
+            {
+                return new ServerRecieveHandshakeModel(protocolCom[1]);
+            }
+            else
+            {
+                return null;
+            }
 
-            return null;
+        }
+        
+        private async Task BroadCastClientNames()
+        {
+            //string[] names = new string[];
+            List<string> names = new List<string>();
+            
+
+            foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
+            {
+                MemberModel member = entry.Value;
+                names.Add(new String(member.Name));
+            }
+
+            string[] arrayNames = names.ToArray();
+
+            Console.WriteLine(arrayNames);
+            try
+            {
+                foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
+                {
+
+                    MemberModel broadCastMember = entry.Value;
+                    if (broadCastMember.TcpClient.GetState() == TcpState.Established)
+                    {
+                        //NetworkStream networkStreamToBroadCastTo = broadCastMember.TcpClient.GetStream();
+                        ISendComModel sendComModel = new ServerSendMemberListModel(arrayNames, broadCastMember);
+                        sendCom(sendComModel);
+
+                        //byte[] bufferToSend = Encoding.ASCII.GetBytes(message);
+                        //await networkStreamToBroadCastTo.WriteAsync(bufferToSend, 0, bufferToSend.Length);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            
+        }
+
+        private async Task sendCom(ISendComModel sendComModel)
+        {
+            try
+            {
+                NetworkStream networkStream = sendComModel.GetMemberModel().TcpClient.GetStream();
+                char[] messageToSend = sendComModel.ToCharArray();
+                string ms = new String(messageToSend);
+                Console.WriteLine("inSendCOm");
+                Console.WriteLine(ms);
+                byte[] bufferToSend = Encoding.ASCII.GetBytes(messageToSend);
+                //Console.WriteLine("THE MESSAGE");
+                //Console.WriteLine($"Message {ms}");
+                //Console.WriteLine(messageToSend.Length);
+
+                //If the message is smaller than or equal to the specified buffersize, send the message as is to save characters
+                if (bufferSize >= messageToSend.Length)
+                {
+                    await networkStream.WriteAsync(bufferToSend, 0, bufferToSend.Length);
+                }
+                //If the message is bigger than the specified buffersize, break the message up into smaller pieces 
+                else
+                {
+                    int remainingChars = messageToSend.Length;
+                    for (int i = 0; i < (int)Math.Ceiling((decimal)messageToSend.Length / bufferSize); i++)
+                    {
+                        int hallo = (int)Math.Ceiling((decimal)messageToSend.Length / bufferSize);
+                        //Console.WriteLine($"iterations { hallo}");
+
+                        //Console.WriteLine();
+
+                        int roundIndex = (i * bufferSize);
+
+                        int theRealBufferSize;
+                        if (remainingChars > bufferSize)
+                        {
+                            theRealBufferSize = bufferSize;
+                        }
+                        else
+                        {
+                            theRealBufferSize = remainingChars;
+                        }
+
+                        remainingChars -= theRealBufferSize;
+                        Console.WriteLine($"Remaining chars: {remainingChars}");
+
+                        Console.WriteLine("writing");
+                        Console.WriteLine(theRealBufferSize);
+                        await networkStream.WriteAsync(bufferToSend, roundIndex, theRealBufferSize);
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("TROEP");
+                throw ex;
+            }
+            Console.WriteLine("SENDED");
         }
 
     }

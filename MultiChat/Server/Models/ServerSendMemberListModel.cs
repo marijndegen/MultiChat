@@ -11,9 +11,20 @@ namespace Server.Models
     {
         private static byte comType = 2;
 
-        public ServerSendMemberListModel()
-        {
+        private string[] names;
 
+        public string[] Names
+        {
+            get { return names; }
+            set { names = value; }
+        }
+
+        private MemberModel memberModel;
+
+        public ServerSendMemberListModel(string[] names, MemberModel memberModel)
+        {
+            this.names = names;
+            this.memberModel = memberModel;
         }
 
         public byte GetComType()
@@ -23,12 +34,17 @@ namespace Server.Models
 
         public MemberModel GetMemberModel()
         {
-            throw new NotImplementedException();
+            return memberModel;
         }
 
         public char[] ToCharArray()
         {
-            throw new NotImplementedException();
+            string implodedNames = String.Join("~", names);
+            Console.WriteLine("implodednames");
+            Console.WriteLine();
+            implodedNames = implodedNames.ToString();
+            string message = $"^^^{comType}~{implodedNames}$$$";
+            return message.ToCharArray();
         }
     }
 }
