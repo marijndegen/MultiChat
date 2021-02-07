@@ -31,7 +31,7 @@ namespace Client.Models
         public char[] ToCharArray()
         {
             string name = new String(memberModel.Name);
-            string message = $"^^^{comType}~~~{name}$$$";
+            string message = $"^^^{comType}~{name}$$$";
             return message.ToCharArray();
         }
     }

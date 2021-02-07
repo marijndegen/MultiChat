@@ -64,16 +64,16 @@ namespace Client.Services
 
                 MemberModel memberModel = new MemberModel(clientName, tcpClient);
                 clientComService.BufferSize = bufferSize;
-                UpdateVMState(true, true);
-
+                
                 Task messageListner = Task.Run(() => clientComService.ConnectionToHost(memberModel, clientToken), clientToken);
 
                 await clientComService.sendCom(new ClientSendHandshakeModel(memberModel));
+                UpdateVMState(true, true);
             }
             catch (Exception ex)
             {
                 UpdateVMState(true, false);
-                MessageBox.Show("Couln't connect to the server");
+                MessageBox.Show("Couln't connect to the server", "Client", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning, System.Windows.MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 throw ex;
             }
         }
@@ -89,7 +89,6 @@ namespace Client.Services
 
                 tcpClient.GetStream().Close();
                 tcpClient.Close();
-
                 tcpClient = null;
 
             }
@@ -178,7 +177,6 @@ namespace Client.Services
 
             NetworkStream networkStream = memberModel.TcpClient.GetStream();
 
-            bool serverThrewError = false;
             try
             {
                 while (clientActive && !clientToken.IsCancellationRequested)
@@ -186,27 +184,58 @@ namespace Client.Services
                     if (memberModel.TcpClient.GetState() == TcpState.Established)
                     {
                         clientToken.ThrowIfCancellationRequested();
+                        IComModel comModel = await DecodeCom(networkStream);
+                        
 
-                        Console.WriteLine("reading");
-                        int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
-                        message = Encoding.ASCII.GetString(buffer, 0, readBytes);
-                        Console.WriteLine(message);
                     }
                     else
                     {
-                        serverThrewError = true;
                         throw new Exception("No connection from server");
                     }
                 }
             }
             catch (Exception ex)
             {
-                    //MessageBox.Show("Connection with server lost");
-                MessageBox.Show("Connection with the server is lost", "Client", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning, System.Windows.MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-
-                StopConnectionToHost();
+                    MessageBox.Show("Connection with the server is lost", "Client", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning, System.Windows.MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                    StopConnectionToHost();
             }
         }
+
+        public async Task<IComModel> DecodeCom(NetworkStream networkStream)
+        {
+            string completeMessage = "";
+            string message;
+            byte[] buffer = new byte[bufferSize];
+            bool foundCompleteMessage = false;
+
+            do
+            {
+                int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+                message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+                completeMessage = $"{completeMessage}{message}";
+
+                if (completeMessage.Length > 6)
+                {
+                    Console.Write("Recieved: ");
+                    Console.WriteLine(message.ToString());
+                    Console.WriteLine("CompleteMessage");
+                    Console.WriteLine();
+                    foundCompleteMessage = completeMessage.Substring(completeMessage.Length - 3, 3) == "$$$";
+                }
+
+                if (foundCompleteMessage)
+                {
+                    Console.WriteLine("the complete message");
+                    Console.WriteLine(completeMessage);
+                }
+
+            } while (!foundCompleteMessage);
+
+            return null;
+        }
+
+        //todo refactor code.
+        //todo implement the buffersize on the recieving end of client and the sending end of server
 
         public async Task sendCom(ISendComModel sendComModel)
         {
@@ -216,24 +245,25 @@ namespace Client.Services
                 char[] messageToSend = sendComModel.ToCharArray();
                 string ms = new String(messageToSend);
                 byte[] bufferToSend = Encoding.ASCII.GetBytes(messageToSend);
-                Console.WriteLine("THE MESSAGE");
-                Console.WriteLine($"Message {ms}");
-                Console.WriteLine(messageToSend.Length);
+                //Console.WriteLine("THE MESSAGE");
+                //Console.WriteLine($"Message {ms}");
+                //Console.WriteLine(messageToSend.Length);
 
-                //If the message is smaller than the specified buffersize, send the message as is to save characters
+                //If the message is smaller than or equal to the specified buffersize, send the message as is to save characters
                 if (bufferSize >= messageToSend.Length)
                 {
                     await networkStream.WriteAsync(bufferToSend, 0, bufferToSend.Length);
                 }
+                //If the message is bigger than the specified buffersize, break the message up into smaller pieces 
                 else
                 {
                     int remainingChars = messageToSend.Length;
                     for (int i = 0; i < (int)Math.Ceiling((decimal)messageToSend.Length / bufferSize); i++)
                     {
                         int hallo = (int)Math.Ceiling((decimal)messageToSend.Length / bufferSize);
-                        Console.WriteLine($"iterations { hallo}");
+                        //Console.WriteLine($"iterations { hallo}");
 
-                        Console.WriteLine();
+                        //Console.WriteLine();
 
                         int roundIndex = (i * bufferSize);
 
@@ -255,19 +285,13 @@ namespace Client.Services
                         await networkStream.WriteAsync(bufferToSend, roundIndex, theRealBufferSize);
 
                     }
-                }
-
-
-                
-
-                
+                }    
             }
             catch (Exception ex)
             {
                 Console.WriteLine("TROEP");
                 throw ex;
             }
-
             Console.WriteLine("SENDED");
         }
 

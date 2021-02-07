@@ -35,16 +35,12 @@ namespace Server.Services
             this.addMessage = addMessage;
             this.updateVMModel = updateVMState;
             serverComService = new ServerComService();
-
-
         }
-
         #endregion
 
         #region Starthosting, Stophosting, BufferSize
         public void StartHosting(string serverAddress, int serverPort, int bufferSize)
         {
-
             try
             {
                 updateVMModel(false, false);
@@ -67,7 +63,6 @@ namespace Server.Services
                 updateVMModel(true, false);
                 throw ex;
             }
-
         }
 
         public void StopHosting()
@@ -154,6 +149,7 @@ namespace Server.Services
             }
             finally
             {
+                Console.WriteLine("REMOVE CLIENTS");
                 foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
                 {
                     MemberModel memberModel = entry.Value;
@@ -168,10 +164,6 @@ namespace Server.Services
             string clientName = new String(memberModel.Name);
             Console.WriteLine($"We got a new client with the name: {clientName}");
 
-            //int bufferSize = 1024;
-            string message;
-            byte[] buffer = new byte[bufferSize];
-
             NetworkStream networkStream = memberModel.TcpClient.GetStream();
 
             try
@@ -179,7 +171,7 @@ namespace Server.Services
                 while (isHosting)
                 {
                     hostingToken.ThrowIfCancellationRequested();
-                    IComModel messageModel = await DecodeCom(networkStream);
+                    IComModel comModel = await DecodeCom(networkStream);
                 }
                 Console.WriteLine("Client disconnected");
             }
@@ -201,8 +193,6 @@ namespace Server.Services
             byte[] buffer = new byte[bufferSize];
             bool foundCompleteMessage = false;
 
-            //todo these two lines of code should be producing a chatmessage class by decoding the content.
-
             do
             {
                 int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
@@ -211,10 +201,6 @@ namespace Server.Services
 
                 if (completeMessage.Length > 6)
                 {
-                    Console.Write("Recieved: ");
-                    Console.WriteLine(message.ToString());
-                    Console.WriteLine("CompleteMessage");
-                    Console.WriteLine();
                     foundCompleteMessage = completeMessage.Substring(completeMessage.Length - 3, 3) == "$$$";
                 }
 
@@ -226,59 +212,11 @@ namespace Server.Services
 
             } while (!foundCompleteMessage);
 
+            string strippedMessage = completeMessage.Trim('^', '$');
+            strippedMessage.Split('~');
 
-
-
-            //todo this whole region has to be implemented in a function that will broadcast the message using the ISendMessageModel.cs
-            //foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
-            //{
-
-            //    MemberModel broadCastMember = entry.Value;
-            //    if (broadCastMember.TcpClient.GetState() == TcpState.Established)
-            //    {
-            //        NetworkStream networkStreamToBroadCastTo = broadCastMember.TcpClient.GetStream();
-            //        byte[] bufferToSend = Encoding.ASCII.GetBytes(message);
-            //        await networkStreamToBroadCastTo.WriteAsync(bufferToSend, 0, bufferToSend.Length);
-            //    }
-            //}
-
-            //for debugging purposes
-
-
-
-
-
-            //string message = "";
-            ////string memmoryMessage = "";
-            ////string newMessage = "";
-            //char[] decoded;
-            //byte[] buffer = new byte[bufferSize];
-            //bool messageCompleted = false;
-
-            //while (!messageCompleted)
-            //{
-            //    int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
-            //    message = Encoding.ASCII.GetString(buffer, 0, readBytes);
-            //    //memmoryMessage = $"{memmoryMessage}{newMessage}";
-
-
-            //    if (message.Length > 0)
-            //    {
-            //        Console.Write("Recieved: ");
-            //        Console.WriteLine(message.ToString());
-            //    }
-
-            //    //if (memmoryMessage.Length > 6)
-            //    //{
-            //    //    Console.WriteLine(memmoryMessage.Substring(memmoryMessage.Length - 4, 3));
-            //    //}
-
-            //}
 
             return null;
-
-
-
         }
 
     }
