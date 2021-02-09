@@ -44,14 +44,6 @@ namespace Server.ViewModels
 			set { bufferSize = value; }
 		}
 
-		private ObservableCollection<IChatMessage> messages;
-
-		public ObservableCollection<IChatMessage> Messages
-		{
-			get { return messages; }
-			set { messages = value; OnPropertyChanged("Messages"); }
-		}
-
 		#endregion
 
 		#region View labels and state
@@ -139,16 +131,11 @@ namespace Server.ViewModels
 
 			connectionCommand = new ConnectionCommand(ConnectOrDisconnect);
 			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize);
-			serverService = new ServerService(AddMessage, UpdateVMState);
+			serverService = new ServerService(UpdateVMState);
 		}
         #endregion
 
         #region Service operations
-        public void AddMessage(IChatMessage message)
-		{
-			messages.Add(message); OnPropertyChanged("Messages");
-		}
-
 		public void UpdateVMState(bool enable, bool operating)
 		{
 			connectionCommand.Enable = enable;

@@ -35,8 +35,6 @@ namespace Client.Services
             this.AddMessage = addMessage;
             this.UpdateVMState = updateVMState;
             clientComService = new ClientComService(this.StopConnectionToHost, this.AddMessage);
-            //Console.WriteLine(DateTime.Now.ToString());
-            //Console.WriteLine(DateTime.Parse(DateTime.Now.ToString()));
         }
 
         #endregion
@@ -115,20 +113,7 @@ namespace Client.Services
 
         public async Task SendCom(string message)
         {
-            //await clientComService.sendCom(new ClientSendHandshakeModel(memberModel));
             await clientComService.sendMessage(message);
-
-            //try
-            //{
-            //    //Console.WriteLine("connected");
-            //    byte[] buffer = Encoding.ASCII.GetBytes(message);
-            //    await networkStream.WriteAsync(buffer, 0, buffer.Length);
-            //    Console.WriteLine("SENDED");
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw ex;
-            //}
         }
         #endregion
 
@@ -187,11 +172,6 @@ namespace Client.Services
 
         public async Task ConnectionToHost(MemberModel memberModel, CancellationToken clientToken)
         {
-            int bufferSize = 1024;
-            string message = "";
-            byte[] buffer = new byte[bufferSize];
-            clientActive = true;
-
             NetworkStream networkStream = memberModel.TcpClient.GetStream();
 
             try

@@ -20,7 +20,6 @@ namespace Server.Services
     public class ServerService
     {
         #region Delegates
-        private Action<IChatMessage> addMessage;
         private Action<bool, bool> updateVMModel;
         #endregion
 
@@ -31,9 +30,8 @@ namespace Server.Services
         private CancellationTokenSource hostingTokenSource;
         private CancellationToken hostingToken;
 
-        public ServerService(Action<IChatMessage> addMessage, Action<bool, bool> updateVMState)
+        public ServerService(Action<bool, bool> updateVMState)
         {
-            this.addMessage = addMessage;
             this.updateVMModel = updateVMState;
             serverComService = new ServerComService();
         }
@@ -246,7 +244,6 @@ namespace Server.Services
         
         private async Task BroadCastClientNames()
         {
-            //string[] names = new string[];
             List<string> names = new List<string>();
             
 
@@ -267,12 +264,8 @@ namespace Server.Services
                     MemberModel broadCastMember = entry.Value;
                     if (broadCastMember.TcpClient.GetState() == TcpState.Established)
                     {
-                        //NetworkStream networkStreamToBroadCastTo = broadCastMember.TcpClient.GetStream();
                         ISendComModel sendComModel = new ServerSendMemberListModel(arrayNames, broadCastMember);
                         await sendCom(sendComModel);
-
-                        //byte[] bufferToSend = Encoding.ASCII.GetBytes(message);
-                        //await networkStreamToBroadCastTo.WriteAsync(bufferToSend, 0, bufferToSend.Length);
                     }
                 }
             }
@@ -285,8 +278,6 @@ namespace Server.Services
 
         private async Task broadCastMessage(ServerRecieveMessageModel serverRecieveMessageModel)
         {
-            
-
             try
             {
                 foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
@@ -295,12 +286,8 @@ namespace Server.Services
                     MemberModel broadCastMember = entry.Value;
                     if (broadCastMember.TcpClient.GetState() == TcpState.Established)
                     {
-                        //NetworkStream networkStreamToBroadCastTo = broadCastMember.TcpClient.GetStream();
                         ISendComModel sendComModel = new ServerBroadcastMessageModel(serverRecieveMessageModel.Message, broadCastMember);
                         await sendCom(sendComModel);
-
-                        //byte[] bufferToSend = Encoding.ASCII.GetBytes(message);
-                        //await networkStreamToBroadCastTo.WriteAsync(bufferToSend, 0, bufferToSend.Length);
                     }
                 }
             }
@@ -320,10 +307,7 @@ namespace Server.Services
                 Console.WriteLine("inSendCOm");
                 Console.WriteLine(ms);
                 byte[] bufferToSend = Encoding.ASCII.GetBytes(messageToSend);
-                //Console.WriteLine("THE MESSAGE");
-                //Console.WriteLine($"Message {ms}");
-                //Console.WriteLine(messageToSend.Length);
-
+                
                 //If the message is smaller than or equal to the specified buffersize, send the message as is to save characters
                 if (bufferSize >= messageToSend.Length)
                 {
@@ -336,9 +320,6 @@ namespace Server.Services
                     for (int i = 0; i < (int)Math.Ceiling((decimal)messageToSend.Length / bufferSize); i++)
                     {
                         int hallo = (int)Math.Ceiling((decimal)messageToSend.Length / bufferSize);
-                        //Console.WriteLine($"iterations { hallo}");
-
-                        //Console.WriteLine();
 
                         int roundIndex = (i * bufferSize);
 
