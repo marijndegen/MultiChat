@@ -120,10 +120,6 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="..\Server\Server.csproj">
-      <Project>{FFCEFAE2-0080-4A03-8306-0BD247D394C4}</Project>
-      <Name>Server</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Shared\Shared.csproj">
       <Project>{9FF3179E-453E-4FAF-8E23-60B9FBA90C5B}</Project>
       <Name>Shared</Name>
