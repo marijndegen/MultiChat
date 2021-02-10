@@ -62,6 +62,8 @@ namespace Client.Services
 
                 MemberModel memberModel = new MemberModel(clientName, tcpClient);
                 clientComService.BufferSize = bufferSize;
+                clientComService.ClientActive = true;
+                clientComService.MemberModel = memberModel;
                 
                 Task messageListner = Task.Run(() => clientComService.ConnectionToHost(memberModel, clientToken), clientToken);
 
@@ -235,7 +237,7 @@ namespace Client.Services
 
 
 
-            } while (!foundCompleteMessage);
+            } while (!foundCompleteMessage && clientActive && memberModel.TcpClient.GetState() == TcpState.Established);
 
             string strippedMessage = completeMessage.Trim('^', '$');
             string[] protocolCom = strippedMessage.Split('~');
