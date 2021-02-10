@@ -45,7 +45,7 @@ namespace Client.Services
             try
             {
                 UpdateVMState(false, false);
-                UserInput userInput = Validation.ValidateUserInput(serverAddress, port, bufferSize);
+                UserInput userInput = Validation.ClientValidateUserInput(clientName, serverAddress, port, bufferSize);
 
                 tcpClient = new TcpClient();
                 await tcpClient.ConnectAsync(userInput.Address, userInput.Port);
@@ -75,7 +75,7 @@ namespace Client.Services
             catch (Exception ex)
             {
                 UpdateVMState(true, false);
-                MessageBox.Show("Couln't connect to the server", "Client", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning, System.Windows.MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                MessageBox.Show($"Couln't connect to the server: {ex.Message}", "Client", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning, System.Windows.MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
                 throw ex;
             }
         }
@@ -259,8 +259,8 @@ namespace Client.Services
         
         public async Task sendMessage(string message)
         {
-
-            this.sendCom(new ClientSendMessageModel(message, this.memberModel));
+            string fullMessage = $"{memberModel.Name}: {message}";
+            this.sendCom(new ClientSendMessageModel(fullMessage, this.memberModel));
         }
 
         public async Task sendCom(ISendComModel sendComModel)

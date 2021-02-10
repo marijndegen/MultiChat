@@ -41,14 +41,32 @@ namespace Shared.HelperFunctions
 
         }
 
-        public static UserInput ValidateUserInput(string serverAddress, int port, int bufferSize)
+        public static UserInput ClientValidateUserInput(string clientName, string serverAddress, int port, int bufferSize)
         {
+            if (clientName.Length < 1)
+                throw new Exception("Fill in a clientName");
+                   
             IPAddress address = IPAddress.Parse(serverAddress);
-            if (port <= 0 || port >= 65535)
+            if (!ValidatePort(port))
                 throw new Exception($"Port: {port} not valid");
             if (!ValidateBufferSize(bufferSize))
                 throw new Exception("Buffersize should be between 1 and 10.000");
             return new UserInput(address, port, bufferSize);
+        }
+
+        public static UserInput ServerValidateUserInput(string serverAddress, int port, int bufferSize)
+        {
+            IPAddress address = IPAddress.Parse(serverAddress);
+            if(!ValidatePort(port))
+                throw new Exception($"Port: {port} not valid");
+            if (!ValidateBufferSize(bufferSize))
+                throw new Exception("Buffersize should be between 1 and 10.000");
+            return new UserInput(address, port, bufferSize);
+        }
+
+        private static bool ValidatePort(int port)
+        {
+            return !(port <= 0 || port >= 65535);
         }
 
         public static bool ValidateBufferSize(int bufferSize)

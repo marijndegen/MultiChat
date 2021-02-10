@@ -43,7 +43,7 @@ namespace Server.Services
             try
             {
                 updateVMModel(false, false);
-                UserInput input = Validation.ValidateUserInput(serverAddress, serverPort, bufferSize);
+                UserInput input = Validation.ServerValidateUserInput(serverAddress, serverPort, bufferSize);
                 serverComService.IsHosting = true;
                 serverComService.BufferSize = bufferSize;
 
