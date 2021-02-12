@@ -82,24 +82,27 @@ namespace Client.Services
 
         public void StopConnectionToHost()
         {
-            try
+            if (clientComService.ClientActive)
             {
-                Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateVMState(false, false)));
+                try
+                {
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateVMState(false, false)));
 
-                clientComService.ClientActive = false;
+                    clientComService.ClientActive = false;
 
-                tcpClient.GetStream().Close();
-                tcpClient.Close();
-                tcpClient = null;
+                    tcpClient.GetStream().Close();
+                    tcpClient.Close();
+                    tcpClient = null;
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error in stopping the client.");
-            }
-            finally
-            {
-                Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateVMState(true, false)));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error in stopping the client.");
+                }
+                finally
+                {
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateVMState(true, false)));
+                }
             }
         }
 
