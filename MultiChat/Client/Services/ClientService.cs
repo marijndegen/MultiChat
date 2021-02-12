@@ -259,8 +259,9 @@ namespace Client.Services
         
         public async Task sendMessage(string message)
         {
-            string fullMessage = $"{memberModel.Name}: {message}";
-            this.sendCom(new ClientSendMessageModel(fullMessage, this.memberModel));
+            string clientName = new string(memberModel.Name);
+            string fullMessage = $"{clientName}: {message}";
+            await this.sendCom(new ClientSendMessageModel(fullMessage, this.memberModel));
         }
 
         public async Task sendCom(ISendComModel sendComModel)
