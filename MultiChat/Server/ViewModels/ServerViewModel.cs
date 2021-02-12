@@ -8,18 +8,24 @@ using System.ComponentModel;
 using Server.Models;
 using System.Collections.ObjectModel;
 using Shared.Commands;
+using Server.Models.ServerCom;
+using Shared.Models;
+using Server.Services;
+using Shared.HelperFunctions;
+using static Shared.HelperFunctions.Validation;
+using System.Windows;
 
 namespace Server.ViewModels
 {
     public class ServerViewModel : INotifyPropertyChanged
     {
         #region View values
-        private string serverAdress;
+        private string serverAddress;
 
 		public string ServerAddress
 		{
-			get { return serverAdress; }
-			set { serverAdress = value; }
+			get { return serverAddress; }
+			set { serverAddress = value; }
 		}
 		
 		private int serverPort;
@@ -38,17 +44,9 @@ namespace Server.ViewModels
 			set { bufferSize = value; }
 		}
 
-		private ObservableCollection<Message> messages;
-
-		public ObservableCollection<Message> Messages
-		{
-			get { return messages; }
-			set { messages = value; OnPropertyChanged("EmployeesList"); }
-		}
-
 		#endregion
 
-		#region View Labels and state
+		#region View labels and state
 		private string connectionLabel = "Start hosting";
 
 		public string ConnectionLabel
@@ -64,10 +62,9 @@ namespace Server.ViewModels
 			get { return isIdle; }
 			set { isIdle = value; OnPropertyChanged("IsIdle"); }
 		}
-
 		#endregion
 
-		#region Connection Operation
+		#region View operations
 		private ConnectionCommand connectionCommand;
 
 		public ConnectionCommand ConnectionCommand
@@ -75,14 +72,18 @@ namespace Server.ViewModels
 			get { return connectionCommand; }
 		}
 
-		public async void Connect()
+		public void ConnectOrDisconnect()
 		{
 			try
 			{
-				if (!serverService.IsHosting)
-					await serverService.StartHosting(ServerAddress, ServerPort, BufferSize);
+				if (isIdle)
+				{ 
+					serverService.StartHosting(serverAddress, serverPort, bufferSize);
+				}
 				else
+				{
 					serverService.StopHosting();
+				}
 			}
 			catch (Exception ex)
 			{
@@ -91,6 +92,19 @@ namespace Server.ViewModels
 
 		}
 
+		private SetBufferSizeCommand setBufferSizeCommand;
+
+		public SetBufferSizeCommand SetBufferSizeCommand
+		{
+			get { return setBufferSizeCommand; }
+		}
+
+		public void SetBufferSize()
+		{
+			Console.WriteLine($"set buffersize: {bufferSize}");
+			serverService.SetBufferSize(bufferSize);
+
+		}
 		#endregion
 
 		#region INotifyPropertyChanged
@@ -103,9 +117,11 @@ namespace Server.ViewModels
 				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
-		#endregion
+        #endregion
 
-		private ServerService serverService;
+        #region Service and constructor
+
+        private ServerService serverService;
 
 		public ServerViewModel()
 		{
@@ -113,24 +129,23 @@ namespace Server.ViewModels
 			ServerPort = 9000;
 			BufferSize = 1024;
 
-			connectionCommand = new ConnectionCommand(Connect);
-			serverService = new ServerService(AddMessage, UpdateVMState);
+			connectionCommand = new ConnectionCommand(ConnectOrDisconnect);
+			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize);
+			serverService = new ServerService(UpdateVMState);
 		}
+        #endregion
 
-		public void AddMessage(string message)
-		{
-			messages.Add(new Message(message));
-			OnPropertyChanged("EmployeesList");
-		}
-
+        #region Service operations
 		public void UpdateVMState(bool enable, bool operating)
 		{
 			connectionCommand.Enable = enable;
+			setBufferSizeCommand.Enable = operating;
 			if (!operating)
 				ConnectionLabel = "Start Hosting";
 			else
 				ConnectionLabel = "Stop hosting";
 			IsIdle = !operating;
 		}
-	}
+        #endregion
+    }
 }

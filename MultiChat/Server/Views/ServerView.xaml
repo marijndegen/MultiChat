@@ -5,14 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              xmlns:vm="clr-namespace:Server.ViewModels"
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="425" d:DesignWidth="300">
     <UserControl.DataContext>
         <vm:ServerViewModel/>
     </UserControl.DataContext>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="3*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
@@ -31,10 +30,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-
-                <!-- <Label Grid.Row="0">Name</Label>
-                <TextBox Grid.Row="1" x:Name="ClientName" Text="Client 1" Margin="5"/> -->
 
                 <Label Grid.Row="2">IP Address</Label>
                 <TextBox Grid.Row="3" x:Name="ServerIP" Text="{Binding Path=ServerAddress, Mode=TwoWay}" IsEnabled="{Binding Path=IsIdle}" Margin="5"/>
@@ -45,14 +42,9 @@
                 <Label Grid.Row="6">Buffer size</Label>
                 <TextBox Grid.Row="7" x:Name="BufferSize" Text="{Binding Path=BufferSize, Mode=TwoWay}" Margin="5"/>
 
-                <Button Grid.Row="8" x:Name="ServerConnect" Content="{Binding Path=ConnectionLabel}" Command="{Binding Path=ConnectionCommand}" Padding="5" />
+                <Button Grid.Row="8" x:Name="SetBufferSize" Content="Set buffer size" Command="{Binding Path=SetBufferSizeCommand}" Padding="5" Margin="5"/>
+                <Button Grid.Row="9" x:Name="ServerConnec2t" Content="{Binding Path=ConnectionLabel}" Command="{Binding Path=ConnectionCommand}" Padding="5" Margin="5"/>
             </Grid>
-        </GroupBox>
-
-        <GroupBox Grid.Column="1" Grid.RowSpan="2" Header="Chats" Padding="10" Margin="10">
-            <ListBox x:Name="ChatList">
-                <ListBoxItem>No chat messages yet...</ListBoxItem>
-            </ListBox>
         </GroupBox>
     </Grid>
 </UserControl>

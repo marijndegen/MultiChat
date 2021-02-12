@@ -1,7 +1,11 @@
-﻿using Client.Models;
+﻿using Client.Commands;
+using Client.Models;
+using Client.Models.ClientCom;
+using Client.Services;
 using Shared.Commands;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -10,7 +14,7 @@ using System.Threading.Tasks;
 namespace Client.ViewModels
 {
     public class ClientViewModel : INotifyPropertyChanged
-    {
+	{
         #region View values
         private string clientName;
 
@@ -41,11 +45,28 @@ namespace Client.ViewModels
 		public int BufferSize
 		{
 			get { return bufferSize; }
-			set { bufferSize = value; OnPropertyChanged("BufferSize"); }
+			set { bufferSize = value; }
 		}
+
+		private string message;
+
+		public string Message
+		{
+			get { return message; }
+			set { message = value; }
+		}
+
+		private ObservableCollection<ClientChatMessage> messages;
+
+		public ObservableCollection<ClientChatMessage> Messages
+		{
+			get { return messages; }
+			set { messages = value; OnPropertyChanged("Messages"); }
+		}
+
 		#endregion
 
-		#region Viewlabels and State
+		#region View labels and State
 		private string connectionLabel = "Start connection with host";
 
 		public string ConnectionLabel
@@ -59,13 +80,13 @@ namespace Client.ViewModels
 		public bool IsIdle
 		{
 			get { return isIdle; }
-			set { isIdle = value; }
+			set { isIdle = value; OnPropertyChanged("IsIdle"); OnPropertyChanged("IsActive"); }
 		}
-
-
+		public bool IsActive { get { return !IsIdle; } }
 
 		#endregion
 
+		#region View operations
 		private ConnectionCommand connectionCommand;
 
 		public ConnectionCommand ConnectionCommand
@@ -73,6 +94,52 @@ namespace Client.ViewModels
 			get { return connectionCommand; }
 		}
 
+		public async void ConnectOrDisconnect()
+		{
+			try
+			{
+				if (isIdle)
+				{
+					await clientService.StartConnectionToHost(clientName, ServerAddress, ServerPort, BufferSize);
+				}
+				else
+				{
+					clientService.StopConnectionToHost();
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.Write("Connect or Disconnect: ");
+				Console.WriteLine(ex.Message);
+			}
+
+		}
+
+		private MessageCommand messageCommand;
+
+		public MessageCommand MessageCommand
+		{
+			get { return messageCommand; }
+		}
+
+		public async void SendMessage()
+		{
+			await clientService.SendCom(message);
+		}
+
+		private SetBufferSizeCommand setBufferSizeCommand;
+
+		public SetBufferSizeCommand SetBufferSizeCommand
+		{
+			get { return setBufferSizeCommand; }
+		}
+
+		public async void SetBufferSize()
+		{
+			clientService.SetBufferSize(bufferSize);
+		}
+		
+		#endregion
 
 		#region INotifyPropertyChanged
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -84,9 +151,10 @@ namespace Client.ViewModels
 				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
-		#endregion
+        #endregion
 
-		private ClientService clientService;
+        #region Service and constructor
+        private ClientService clientService;
 
 		public ClientViewModel()
 		{
@@ -94,43 +162,38 @@ namespace Client.ViewModels
 			ServerAddress = "127.0.0.1";
 			ServerPort = 9000;
 			BufferSize = 1024;
+			Message = "Hello World!";
 
-			connectionCommand = new ConnectionCommand(StartConnection);
+			connectionCommand = new ConnectionCommand(ConnectOrDisconnect);
+			messageCommand = new MessageCommand(SendMessage);
+			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize);
+
 			clientService = new ClientService(AddMessage, UpdateVMState);
-			//TODO BIND THE STARTCONNECTION COMMAND 
+
+			messages = new ObservableCollection<ClientChatMessage>();
+
 		}
+        #endregion
 
-
-		public async void StartConnection()
-		{
-			if (isIdle)
-			{
-				//TODO pass clientname
-				await clientService.StartConnectionToHost(ServerAddress, ServerPort, BufferSize);
-			}
-			else
-			{
-
-			}
-		}
-
-		public void AddMessage(string text)
+        #region Service operations
+        public void AddMessage(string text)
 		{
 
+			messages.Add(new ClientChatMessage(text));
+			OnPropertyChanged("Messages");
 		}
 
 		public void UpdateVMState(bool enable, bool operating)
 		{
 			connectionCommand.Enable = enable;
+			messageCommand.Enable = operating;
+			setBufferSizeCommand.Enable = operating;
 			if (!operating)
 				ConnectionLabel = "Start connection with host";
 			else
 				ConnectionLabel = "Stop connection with host";
 			IsIdle = !operating;
 		}
-
-
-
-
-	}
+        #endregion
+    }
 }

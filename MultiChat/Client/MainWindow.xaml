@@ -6,6 +6,6 @@
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
         xmlns:vw="clr-namespace:Client.Views"
-        Title="MainWindow" Height="525" Width="800">
+        Title="MainWindow" Height="600" Width="800">
         <vw:ClientView></vw:ClientView>
 </Window>

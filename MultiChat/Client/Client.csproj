@@ -63,7 +63,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Models\ClientService.cs" />
+    <Compile Include="Commands\MessageCommand.cs" />
+    <Compile Include="Models\ClientChatMessage.cs" />
+    <Compile Include="Models\ClientRecieveMemberListModel.cs" />
+    <Compile Include="Models\ClientRecieveMessageModel.cs" />
+    <Compile Include="Models\ClientSendHandshakeModel.cs" />
+    <Compile Include="Models\ClientSendMessageModel.cs" />
+    <Compile Include="Services\ClientService.cs" />
     <Compile Include="ViewModels\ClientViewModel.cs" />
     <Compile Include="Views\ClientView.xaml.cs">
       <DependentUpon>ClientView.xaml</DependentUpon>
@@ -112,14 +118,8 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Commands\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Server\Server.csproj">
-      <Project>{FFCEFAE2-0080-4A03-8306-0BD247D394C4}</Project>
-      <Name>Server</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Shared\Shared.csproj">
       <Project>{9FF3179E-453E-4FAF-8E23-60B9FBA90C5B}</Project>
       <Name>Shared</Name>
