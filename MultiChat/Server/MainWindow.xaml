@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
         xmlns:vw="clr-namespace:Server.Views"
-        Title="MainWindow" Height="350" Width="600">
-    <Grid>
+        Title="MainWindow" Height="425" Width="400">
         <vw:ServerView></vw:ServerView>
-    </Grid>
 </Window>
+
+    
