@@ -119,7 +119,6 @@ namespace Server.Services
 
         public async Task Hosting(TcpListener tcpListener, CancellationToken hostingToken)
         {
-            Console.WriteLine("hosting");
             memberModels = new ConcurrentDictionary<Guid, MemberModel>();
 
             byte newUserCount = 0;
@@ -143,12 +142,11 @@ namespace Server.Services
             catch (Exception ex)
             {
                 isHosting = false;
-                Console.WriteLine($"In hosting: {ex.Message}");
+                Console.WriteLine($"An error occoured in hosting: {ex.Message}");
                 throw ex;
             }
             finally
             {
-                Console.WriteLine("REMOVE CLIENTS");
                 foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
                 {
                     MemberModel memberModel = entry.Value;
@@ -161,7 +159,6 @@ namespace Server.Services
         public async Task ComListener(MemberModel memberModel, CancellationToken hostingToken)
         {
             string clientName = new String(memberModel.Name);
-            Console.WriteLine($"We got a new client with the name: {clientName}");
 
             NetworkStream networkStream = memberModel.TcpClient.GetStream();
 
@@ -186,7 +183,6 @@ namespace Server.Services
 
                     }
                 }
-                Console.WriteLine("Client disconnected");
             }
             catch (Exception ex)
             {
@@ -200,7 +196,6 @@ namespace Server.Services
 
         private async Task<IComModel> DecodeCom(NetworkStream networkStream)
         {
-            //int bufferSize = 1;
             string completeMessage = "";
             string message;
             byte[] buffer = new byte[bufferSize];
@@ -255,7 +250,6 @@ namespace Server.Services
 
             string[] arrayNames = names.ToArray();
 
-            Console.WriteLine(arrayNames);
             try
             {
                 foreach (KeyValuePair<Guid, MemberModel> entry in memberModels)
@@ -304,8 +298,6 @@ namespace Server.Services
                 NetworkStream networkStream = sendComModel.GetMemberModel().TcpClient.GetStream();
                 char[] messageToSend = sendComModel.ToCharArray();
                 string ms = new String(messageToSend);
-                Console.WriteLine("inSendCOm");
-                Console.WriteLine(ms);
                 byte[] bufferToSend = Encoding.ASCII.GetBytes(messageToSend);
                 
                 //If the message is smaller than or equal to the specified buffersize, send the message as is to save characters
@@ -334,10 +326,6 @@ namespace Server.Services
                         }
 
                         remainingChars -= theRealBufferSize;
-                        Console.WriteLine($"Remaining chars: {remainingChars}");
-
-                        Console.WriteLine("writing");
-                        Console.WriteLine(theRealBufferSize);
                         await networkStream.WriteAsync(bufferToSend, roundIndex, theRealBufferSize);
 
                     }
@@ -345,7 +333,7 @@ namespace Server.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("TROEP");
+                Console.WriteLine("Exception in sendCom");
                 throw ex;
             }
             Console.WriteLine("SENDED");

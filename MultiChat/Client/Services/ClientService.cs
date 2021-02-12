@@ -82,7 +82,6 @@ namespace Client.Services
 
         public void StopConnectionToHost()
         {
-            Console.WriteLine("stopping!!");
             try
             {
                 Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateVMState(false, false)));
@@ -96,8 +95,7 @@ namespace Client.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error in stopping client ");
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Error in stopping the client.");
             }
             finally
             {
@@ -180,7 +178,6 @@ namespace Client.Services
             {
                 while (clientActive && !clientToken.IsCancellationRequested)
                 {
-                    Console.WriteLine("doeiii");
                     if (memberModel.TcpClient.GetState() == TcpState.Established)
                     {
                         clientToken.ThrowIfCancellationRequested();
@@ -215,17 +212,12 @@ namespace Client.Services
 
             do
             {
-                Console.WriteLine("hallo");
                 int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
                 message = Encoding.ASCII.GetString(buffer, 0, readBytes);
                 completeMessage = $"{completeMessage}{message}";
 
                 if (completeMessage.Length > 6)
                 {
-                    Console.Write("Recieved: ");
-                    Console.WriteLine(message.ToString());
-                    Console.WriteLine("CompleteMessage");
-                    Console.WriteLine();
                     foundCompleteMessage = completeMessage.Substring(completeMessage.Length - 3, 3) == "$$$";
                 }
 
@@ -250,13 +242,8 @@ namespace Client.Services
             {
                 return null;
             }
-
-            return null;
         }
 
-        //todo refactor code.
-        //todo implement the buffersize on the recieving end of client and the sending end of server
-        
         public async Task sendMessage(string message)
         {
             string clientName = new string(memberModel.Name);
@@ -272,9 +259,6 @@ namespace Client.Services
                 char[] messageToSend = sendComModel.ToCharArray();
                 string ms = new String(messageToSend);
                 byte[] bufferToSend = Encoding.ASCII.GetBytes(messageToSend);
-                //Console.WriteLine("THE MESSAGE");
-                //Console.WriteLine($"Message {ms}");
-                //Console.WriteLine(messageToSend.Length);
 
                 //If the message is smaller than or equal to the specified buffersize, send the message as is to save characters
                 if (bufferSize >= messageToSend.Length)
@@ -288,9 +272,6 @@ namespace Client.Services
                     for (int i = 0; i < (int)Math.Ceiling((decimal)messageToSend.Length / bufferSize); i++)
                     {
                         int hallo = (int)Math.Ceiling((decimal)messageToSend.Length / bufferSize);
-                        //Console.WriteLine($"iterations { hallo}");
-
-                        //Console.WriteLine();
 
                         int roundIndex = (i * bufferSize);
 
@@ -305,10 +286,6 @@ namespace Client.Services
                         }
 
                         remainingChars -= theRealBufferSize;
-                        Console.WriteLine($"Remaining chars: {remainingChars}");
-
-                        Console.WriteLine("writing");
-                        Console.WriteLine(theRealBufferSize);
                         await networkStream.WriteAsync(bufferToSend, roundIndex, theRealBufferSize);
 
                     }
@@ -316,7 +293,7 @@ namespace Client.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("TROEP");
+                Console.WriteLine("Exception in sendCom");
                 throw ex;
             }
             Console.WriteLine("SENDED");

@@ -20,7 +20,6 @@
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
 
-        <!--<StackPanel Grid.Row="0" Orientation="Vertical">-->
         <GroupBox Grid.Row="0" Header="Client Settings" Padding="10" Margin="10" >
             <Grid>
                 <Grid.RowDefinitions>
@@ -67,12 +66,8 @@
 
             </Grid>
         </GroupBox>
-        <!--</StackPanel>-->
 
         <GroupBox Grid.Column="1" Grid.RowSpan="2" Header="Chats" Padding="10" Margin="10" >
-            <!--<ListBox x:Name="ChatList" ItemsSource="{Binding Messages}">
-                <ListBoxItem>No chat messages yet...</ListBoxItem>
-            </ListBox>-->
             <ListBox Margin="20" ItemsSource="{Binding Messages}" ScrollViewer.VerticalScrollBarVisibility="Visible" Height="400">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
