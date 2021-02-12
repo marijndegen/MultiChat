@@ -53,7 +53,7 @@ namespace Client.ViewModels
 		public string Message
 		{
 			get { return message; }
-			set { message = value; }
+			set { message = value; OnPropertyChanged("Message"); }
 		}
 
 		private ObservableCollection<ClientChatMessage> messages;
@@ -124,7 +124,17 @@ namespace Client.ViewModels
 
 		public async void SendMessage()
 		{
-			await clientService.SendCom(message);
+			string messageToSend = Message;
+			string[] charsToRemove = new string[] { "^", "$", "`" };
+			foreach (string c in charsToRemove)
+			{
+				messageToSend = messageToSend.Replace(c, string.Empty);
+			}
+
+			Message = messageToSend;
+
+			if(messageToSend.Length >= 1)
+				await clientService.SendCom(message);
 		}
 
 		private SetBufferSizeCommand setBufferSizeCommand;
@@ -134,7 +144,7 @@ namespace Client.ViewModels
 			get { return setBufferSizeCommand; }
 		}
 
-		public async void SetBufferSize()
+		public void SetBufferSize()
 		{
 			clientService.SetBufferSize(bufferSize);
 		}
