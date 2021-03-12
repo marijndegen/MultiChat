@@ -9,13 +9,7 @@ namespace Shared.Commands
     {
         private Action AdjustBufferFunction;
 
-        private bool enable = false;
-
-        public bool Enable
-        {
-            get { return enable; }
-            set { enable = value; RaiseCanExecuteChanged(); }
-        }
+        private Predicate<object> Enabled;
 
         public void RaiseCanExecuteChanged()
         {
@@ -27,7 +21,7 @@ namespace Shared.Commands
 
         public bool CanExecute(object parameter)
         {
-            return enable;
+            return Enabled(parameter);
         }
 
         public void Execute(object parameter)
@@ -35,9 +29,10 @@ namespace Shared.Commands
             AdjustBufferFunction();
         }
 
-        public SetBufferSizeCommand(Action adjustBufferFunction)
+        public SetBufferSizeCommand(Action adjustBufferFunction, Predicate<object> enabled)
         {
             AdjustBufferFunction = adjustBufferFunction;
+            Enabled = enabled;
         }
     }
 }

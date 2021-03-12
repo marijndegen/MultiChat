@@ -11,13 +11,14 @@ namespace Client.Commands
     {
         private Action MessageFunction;
 
-        private bool enable = false;
+        private Predicate<object> Enabled;
+        //private bool enable = false;
 
-        public bool Enable
-        {
-            get { return enable; }
-            set { enable = value; RaiseCanExecuteChanged(); }
-        }
+        //public bool Enable
+        //{
+        //    get { return enable; }
+        //    set { enable = value; RaiseCanExecuteChanged(); }
+        //}
 
         public void RaiseCanExecuteChanged()
         {
@@ -31,7 +32,8 @@ namespace Client.Commands
         //Feedback: should call the canexecute method provided in the constructor.
         public bool CanExecute(object parameter)
         {
-            return enable;
+            return Enabled(parameter);
+            //return enable;
         }
 
         public void Execute(object parameter)
@@ -40,9 +42,10 @@ namespace Client.Commands
         }
 
         //Feedback: This should also contain a function that provides canexecute.
-        public MessageCommand(Action connectionFunction)
+        public MessageCommand(Action connectionFunction, Predicate<object> enabled)
         {
             MessageFunction = connectionFunction;
+            Enabled = enabled;
             //Feedback: Set the canexecute function here
         }
     }

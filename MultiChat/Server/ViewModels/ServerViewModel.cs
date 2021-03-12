@@ -71,6 +71,15 @@ namespace Server.ViewModels
             set { working = value; connectionCommand.RaiseCanExecuteChanged(); }
         }
 
+        private bool operating;
+
+        public bool Operating
+        {
+            get { return operating; }
+            set { operating = value; setBufferSizeCommand.RaiseCanExecuteChanged(); }
+        }
+
+
         #endregion
 
         #region View operations
@@ -140,7 +149,7 @@ namespace Server.ViewModels
 			BufferSize = 1024;
 
 			connectionCommand = new ConnectionCommand(ConnectOrDisconnect, (_ => !working));
-			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize);
+			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize, _ => operating);
 			serverService = new ServerService(UpdateVMState);
 		}
         #endregion
@@ -149,7 +158,8 @@ namespace Server.ViewModels
 		public void UpdateVMState(bool enable, bool operating)
 		{
 			//connectionCommand.Enable = enable;
-			setBufferSizeCommand.Enable = operating;
+			//setBufferSizeCommand.Enable = operating;
+			Operating = operating;
 			if (!operating)
 				ConnectionLabel = "Start Hosting";
 			else

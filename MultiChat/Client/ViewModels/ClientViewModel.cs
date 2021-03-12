@@ -95,11 +95,18 @@ namespace Client.ViewModels
             set { working = value; connectionCommand.RaiseCanExecuteChanged(); }
         }
 
+        private bool operating = false;
 
-        #endregion
+        public bool Operating
+        {
+            get { return operating; }
+            set { operating = value; messageCommand.RaiseCanExecuteChanged(); setBufferSizeCommand.RaiseCanExecuteChanged(); }
+        }
 
-        #region View operations
-        private ConnectionCommand connectionCommand;
+		#endregion
+
+		#region View operations
+		private ConnectionCommand connectionCommand;
 
 		public ConnectionCommand ConnectionCommand
 		{
@@ -190,8 +197,8 @@ namespace Client.ViewModels
 			Message = "Hello World!";
 
 			connectionCommand = new ConnectionCommand(ConnectOrDisconnect, (_) => !working);
-			messageCommand = new MessageCommand(SendMessage);
-			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize);
+			messageCommand = new MessageCommand(SendMessage, (_) => operating);
+			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize, (_) => operating);
 
 			clientService = new ClientService(AddMessage, UpdateVMState);
 
@@ -210,8 +217,9 @@ namespace Client.ViewModels
 		public void UpdateVMState(bool enable, bool operating)
 		{
 			//connectionCommand.Enable = enable;
-			messageCommand.Enable = operating;
-			setBufferSizeCommand.Enable = operating;
+			//messageCommand.Enable = operating;
+			//setBufferSizeCommand.Enable = operating;
+			Operating = operating;
 			if (!operating)
 				ConnectionLabel = "Start connection with host";
 			else
