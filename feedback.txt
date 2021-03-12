@@ -1,0 +1,36 @@
+virtual maakt lazy loading mogelijk.
+varchar geeft 4 bytes overhead.
+MS sql index
+MS sql triggers
+MS sql transacties
+MS sql storged procedures
+MS sql eager en lazy loading.
+
+Met een primary key krijg je een clustered index. 
+non clustered index
+covered query
+non covered query
+
+automapper voor het omzetten van een model naar een DTO
+
+mvvm in combinatie met xaml
+- parameter naam
+- bij iedere vm parameter de trigger oproepen.
+- xaml commandbinding.
+
+
+Bij verbeteren:
+Hoe werkt database first, er moeten indexen in.
+of in de code of in de database moet het goed zijn, daarom is het of database first of code first, op dat punt moet je er goed over nadenken.
+
+ONDERZOEK
+ONX.js
+luis serrano
+elliot waite how to run pytorch model in browser with onnx.js
+blazor
+mnist 
+presentatie
+
+mail sturen
+voorstel bp3 en onderzoek
+verbetering bp1

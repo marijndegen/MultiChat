@@ -1,0 +1,3 @@
+abstract viewmodel maken
+de namen van de parameters weghalen en [CallerMemberName] gebruiken.
+een functie gebruiken in alle ICommands in plaats van het variable enable
