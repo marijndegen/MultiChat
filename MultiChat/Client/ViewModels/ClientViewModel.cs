@@ -3,6 +3,7 @@ using Client.Models;
 using Client.Models.ClientCom;
 using Client.Services;
 using Shared.Commands;
+using Shared.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,16 +14,15 @@ using System.Threading.Tasks;
 
 namespace Client.ViewModels
 {
-    public class ClientViewModel : INotifyPropertyChanged
+    public class ClientViewModel : ViewModelBase
 	{
-		//Feedback: OnPropertyChanged is not used in most methods, while the data doesn't flow back from the viewmodel to view.
 		#region View values
 		private string clientName;
 
 		public string ClientName
 		{
 			get { return clientName; }
-			set { clientName = value; }
+			set { clientName = value; OnPropertyChanged(); }
 		}
 
 		private string serverAddress;
@@ -30,7 +30,7 @@ namespace Client.ViewModels
 		public string ServerAddress
 		{
 			get { return serverAddress; }
-			set { serverAddress = value; }
+			set { serverAddress = value; OnPropertyChanged(); }
 		}
 
 		private int serverPort;
@@ -38,7 +38,7 @@ namespace Client.ViewModels
 		public int ServerPort
 		{
 			get { return serverPort; }
-			set { serverPort = value; }
+			set { serverPort = value; OnPropertyChanged(); }
 		}
 
 		private int bufferSize;
@@ -46,17 +46,16 @@ namespace Client.ViewModels
 		public int BufferSize
 		{
 			get { return bufferSize; }
-			set { bufferSize = value; }
+			set { bufferSize = value; OnPropertyChanged(); }
 		}
 
 
 		private string message;
 
-		//Feedback: Message can be replaced.
 		public string Message
 		{
 			get { return message; }
-			set { message = value; OnPropertyChanged("Message"); }
+			set { message = value; OnPropertyChanged(); }
 		}
 
 		private ObservableCollection<ClientChatMessage> messages;
@@ -64,7 +63,7 @@ namespace Client.ViewModels
 		public ObservableCollection<ClientChatMessage> Messages
 		{
 			get { return messages; }
-			set { messages = value; OnPropertyChanged("Messages"); }
+			set { messages = value; OnPropertyChanged(); }
 		}
 
 		#endregion
@@ -75,7 +74,7 @@ namespace Client.ViewModels
 		public string ConnectionLabel
 		{
 			get { return connectionLabel; }
-			set { connectionLabel = value; OnPropertyChanged("ConnectionLabel"); }
+			set { connectionLabel = value; OnPropertyChanged(); }
 		}
 
 		private bool isIdle = true;
@@ -83,7 +82,7 @@ namespace Client.ViewModels
 		public bool IsIdle
 		{
 			get { return isIdle; }
-			set { isIdle = value; OnPropertyChanged("IsIdle"); OnPropertyChanged("IsActive"); }
+			set { isIdle = value; OnPropertyChanged(); OnPropertyChanged("IsActive"); }
 		}
 		public bool IsActive { get { return !IsIdle; } }
 
@@ -173,18 +172,6 @@ namespace Client.ViewModels
 		
 		#endregion
 
-		#region INotifyPropertyChanged
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		private void OnPropertyChanged(string propertyName)
-		{
-			if (PropertyChanged != null)
-			{
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-        #endregion
-
         #region Service and constructor
         private ClientService clientService;
 
@@ -216,9 +203,6 @@ namespace Client.ViewModels
 
 		public void UpdateVMState(bool enable, bool operating)
 		{
-			//connectionCommand.Enable = enable;
-			//messageCommand.Enable = operating;
-			//setBufferSizeCommand.Enable = operating;
 			Operating = operating;
 			if (!operating)
 				ConnectionLabel = "Start connection with host";

@@ -14,18 +14,19 @@ using Server.Services;
 using Shared.HelperFunctions;
 using static Shared.HelperFunctions.Validation;
 using System.Windows;
+using Shared.ViewModel;
 
 namespace Server.ViewModels
 {
-    public class ServerViewModel : INotifyPropertyChanged
-    {
+    public class ServerViewModel : ViewModelBase
+	{
         #region View values
         private string serverAddress;
 
 		public string ServerAddress
 		{
 			get { return serverAddress; }
-			set { serverAddress = value; }
+			set { serverAddress = value; OnPropertyChanged(); }
 		}
 		
 		private int serverPort;
@@ -33,7 +34,7 @@ namespace Server.ViewModels
 		public int ServerPort
 		{
 			get { return serverPort; }
-			set { serverPort = value; }
+			set { serverPort = value; OnPropertyChanged(); }
 		}
 
 		private int bufferSize;
@@ -41,7 +42,7 @@ namespace Server.ViewModels
 		public int BufferSize
 		{
 			get { return bufferSize; }
-			set { bufferSize = value; }
+			set { bufferSize = value; OnPropertyChanged(); }
 		}
 
 		#endregion
@@ -52,7 +53,7 @@ namespace Server.ViewModels
 		public string ConnectionLabel
 		{
 			get { return connectionLabel; }
-			set { connectionLabel = value; OnPropertyChanged("ConnectionLabel"); }
+			set { connectionLabel = value; OnPropertyChanged(); }
 		}
 
 		private bool isIdle = true;
@@ -60,7 +61,7 @@ namespace Server.ViewModels
 		public bool IsIdle
 		{
 			get { return isIdle; }
-			set { isIdle = value; OnPropertyChanged("IsIdle"); }
+			set { isIdle = value; OnPropertyChanged(); }
 		}
 
         private bool working = false;
@@ -126,18 +127,6 @@ namespace Server.ViewModels
 		}
 		#endregion
 
-		#region INotifyPropertyChanged
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		private void OnPropertyChanged(string propertyName)
-		{
-			if (PropertyChanged != null)
-			{
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-        #endregion
-
         #region Service and constructor
 
         private ServerService serverService;
@@ -157,8 +146,6 @@ namespace Server.ViewModels
         #region Service operations
 		public void UpdateVMState(bool enable, bool operating)
 		{
-			//connectionCommand.Enable = enable;
-			//setBufferSizeCommand.Enable = operating;
 			Operating = operating;
 			if (!operating)
 				ConnectionLabel = "Start Hosting";
