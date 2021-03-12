@@ -15,8 +15,9 @@ namespace Client.ViewModels
 {
     public class ClientViewModel : INotifyPropertyChanged
 	{
-        #region View values
-        private string clientName;
+		//Feedback: OnPropertyChanged is not used in most methods, while the data doesn't flow back from the viewmodel to view.
+		#region View values
+		private string clientName;
 
 		public string ClientName
 		{
@@ -48,8 +49,10 @@ namespace Client.ViewModels
 			set { bufferSize = value; }
 		}
 
+
 		private string message;
 
+		//Feedback: Message can be replaced.
 		public string Message
 		{
 			get { return message; }
@@ -135,6 +138,8 @@ namespace Client.ViewModels
 
 			if(messageToSend.Length >= 1)
 				await clientService.SendCom(message);
+
+			Message = "";
 		}
 
 		private SetBufferSizeCommand setBufferSizeCommand;

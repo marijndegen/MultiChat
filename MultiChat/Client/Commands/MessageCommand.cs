@@ -27,6 +27,8 @@ namespace Client.Commands
 
         public event EventHandler CanExecuteChanged;
 
+
+        //Feedback: should call the canexecute method provided in the constructor.
         public bool CanExecute(object parameter)
         {
             return enable;
@@ -37,9 +39,11 @@ namespace Client.Commands
             MessageFunction();
         }
 
+        //Feedback: This should also contain a function that provides canexecute.
         public MessageCommand(Action connectionFunction)
         {
             MessageFunction = connectionFunction;
+            //Feedback: Set the canexecute function here
         }
     }
 }
