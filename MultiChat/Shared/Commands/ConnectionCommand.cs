@@ -11,13 +11,9 @@ namespace Shared.Commands
     {
         private Action ConnectionFunction;
 
-        private bool enable = true;
+        private Predicate<object> Enabled;
 
-        public bool Enable
-        {
-            get { return enable; }
-            set { enable = value; RaiseCanExecuteChanged(); }
-        }
+        public event EventHandler CanExecuteChanged;
 
         public void RaiseCanExecuteChanged()
         {
@@ -25,11 +21,26 @@ namespace Shared.Commands
                 CanExecuteChanged(this, new EventArgs());
         }
 
-        public event EventHandler CanExecuteChanged;
+        //private bool enable = true;
+
+        //public bool Enable
+        //{
+        //    get { return enable; }
+        //    set { enable = value; RaiseCanExecuteChanged(); }
+        //}
+
+        //public void RaiseCanExecuteChanged()
+        //{
+        //    if (CanExecuteChanged != null)
+        //        CanExecuteChanged(this, new EventArgs());
+        //}
+
+        //public event EventHandler CanExecuteChanged;
 
         public bool CanExecute(object parameter)
         {
-            return enable;
+            return Enabled(parameter);
+            //return enable;
         }
 
         public void Execute(object parameter)
@@ -37,9 +48,10 @@ namespace Shared.Commands
             ConnectionFunction();
         }
 
-        public ConnectionCommand(Action connectionFunction)
+        public ConnectionCommand(Action connectionFunction, Predicate<object> enabled)
         {
             ConnectionFunction = connectionFunction;
+            Enabled = enabled;
         }
     }
 }

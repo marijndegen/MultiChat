@@ -62,10 +62,19 @@ namespace Server.ViewModels
 			get { return isIdle; }
 			set { isIdle = value; OnPropertyChanged("IsIdle"); }
 		}
-		#endregion
 
-		#region View operations
-		private ConnectionCommand connectionCommand;
+        private bool working = false;
+
+        public bool Working
+        {
+            get { return working; }
+            set { working = value; connectionCommand.RaiseCanExecuteChanged(); }
+        }
+
+        #endregion
+
+        #region View operations
+        private ConnectionCommand connectionCommand;
 
 		public ConnectionCommand ConnectionCommand
 		{
@@ -74,6 +83,7 @@ namespace Server.ViewModels
 
 		public void ConnectOrDisconnect()
 		{
+			working = true;
 			try
 			{
 				if (isIdle)
@@ -129,7 +139,7 @@ namespace Server.ViewModels
 			ServerPort = 9000;
 			BufferSize = 1024;
 
-			connectionCommand = new ConnectionCommand(ConnectOrDisconnect);
+			connectionCommand = new ConnectionCommand(ConnectOrDisconnect, (_ => !working));
 			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize);
 			serverService = new ServerService(UpdateVMState);
 		}
@@ -138,13 +148,15 @@ namespace Server.ViewModels
         #region Service operations
 		public void UpdateVMState(bool enable, bool operating)
 		{
-			connectionCommand.Enable = enable;
+			//connectionCommand.Enable = enable;
 			setBufferSizeCommand.Enable = operating;
 			if (!operating)
 				ConnectionLabel = "Start Hosting";
 			else
 				ConnectionLabel = "Stop hosting";
 			IsIdle = !operating;
+
+			Working  = !enable;
 		}
         #endregion
     }

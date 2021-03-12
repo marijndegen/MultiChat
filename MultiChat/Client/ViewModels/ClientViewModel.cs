@@ -87,10 +87,19 @@ namespace Client.ViewModels
 		}
 		public bool IsActive { get { return !IsIdle; } }
 
-		#endregion
+        private bool working = false;
 
-		#region View operations
-		private ConnectionCommand connectionCommand;
+        public bool Working
+        {
+            get { return working; }
+            set { working = value; connectionCommand.RaiseCanExecuteChanged(); }
+        }
+
+
+        #endregion
+
+        #region View operations
+        private ConnectionCommand connectionCommand;
 
 		public ConnectionCommand ConnectionCommand
 		{
@@ -99,6 +108,7 @@ namespace Client.ViewModels
 
 		public async void ConnectOrDisconnect()
 		{
+			Working = true;
 			try
 			{
 				if (isIdle)
@@ -179,7 +189,7 @@ namespace Client.ViewModels
 			BufferSize = 1024;
 			Message = "Hello World!";
 
-			connectionCommand = new ConnectionCommand(ConnectOrDisconnect);
+			connectionCommand = new ConnectionCommand(ConnectOrDisconnect, (_) => !working);
 			messageCommand = new MessageCommand(SendMessage);
 			setBufferSizeCommand = new SetBufferSizeCommand(SetBufferSize);
 
@@ -193,14 +203,13 @@ namespace Client.ViewModels
         #region Service operations
         public void AddMessage(string text)
 		{
-
 			messages.Add(new ClientChatMessage(text));
 			OnPropertyChanged("Messages");
 		}
 
 		public void UpdateVMState(bool enable, bool operating)
 		{
-			connectionCommand.Enable = enable;
+			//connectionCommand.Enable = enable;
 			messageCommand.Enable = operating;
 			setBufferSizeCommand.Enable = operating;
 			if (!operating)
@@ -208,7 +217,8 @@ namespace Client.ViewModels
 			else
 				ConnectionLabel = "Stop connection with host";
 			IsIdle = !operating;
+			Working = !enable;
 		}
-        #endregion
-    }
+		#endregion
+	}
 }
