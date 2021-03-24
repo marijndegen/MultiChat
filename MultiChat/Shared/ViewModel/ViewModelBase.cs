@@ -17,5 +17,7 @@ namespace Shared.ViewModel
 				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
+
+		//hier komt setproperty bij.
 	}
 }

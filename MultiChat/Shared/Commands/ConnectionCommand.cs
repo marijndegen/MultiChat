@@ -21,22 +21,6 @@ namespace Shared.Commands
                 CanExecuteChanged(this, new EventArgs());
         }
 
-        //private bool enable = true;
-
-        //public bool Enable
-        //{
-        //    get { return enable; }
-        //    set { enable = value; RaiseCanExecuteChanged(); }
-        //}
-
-        //public void RaiseCanExecuteChanged()
-        //{
-        //    if (CanExecuteChanged != null)
-        //        CanExecuteChanged(this, new EventArgs());
-        //}
-
-        //public event EventHandler CanExecuteChanged;
-
         public bool CanExecute(object parameter)
         {
             return Enabled(parameter);

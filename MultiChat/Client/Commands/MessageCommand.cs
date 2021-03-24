@@ -12,13 +12,6 @@ namespace Client.Commands
         private Action MessageFunction;
 
         private Predicate<object> Enabled;
-        //private bool enable = false;
-
-        //public bool Enable
-        //{
-        //    get { return enable; }
-        //    set { enable = value; RaiseCanExecuteChanged(); }
-        //}
 
         public void RaiseCanExecuteChanged()
         {
@@ -29,7 +22,6 @@ namespace Client.Commands
         public event EventHandler CanExecuteChanged;
 
 
-        //Feedback: should call the canexecute method provided in the constructor.
         public bool CanExecute(object parameter)
         {
             return Enabled(parameter);
